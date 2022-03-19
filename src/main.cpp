@@ -1,11 +1,14 @@
-#include <iostream>
+#include <PoseEstimation.h>
+
+PoseEstimation pose_estimation_object;
 
 void setup(){
-
+  pose_estimation_object.setup_pose_estimation();
 };
 
 void run(){
-  std::cout << "Hello, World!" << std::endl;
+  pose_estimation_object.run_pose_estimation();
+//  std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 };
 
 int main() {
