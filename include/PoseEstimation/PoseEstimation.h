@@ -10,6 +10,8 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/aruco.hpp"
 
+#include "ObjectDetection.h"
+
 #ifndef REALTIME_POSE_ESTIMATION_INCLUDE_POSEESTIMATION_H_
 #define REALTIME_POSE_ESTIMATION_INCLUDE_POSEESTIMATION_H_
 
@@ -47,17 +49,8 @@ class PoseEstimation {
   float example_dist_coefficients_data[5] = {0.157553,-0.501105,-0.00164696,0.000623876,0.466404};
   cv::Mat example_dist_coefficients_ = cv::Mat(1,5,CV_32F,example_dist_coefficients_data);
 
-
-//  cv::Ptr<cv::aruco::Dictionary> dictionary_ = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_APRILTAG_25h9);
-
-//  cv::Ptr<cv::aruco::Dictionary> dictionary_ = getPredefinedDictionary(cv::aruco::DICT_APRILTAG_25h9);
-
-
-//  cv::Ptr<cv::aruco::DetectorParameters> parameters_;
-//  std::vector<std::vector<cv::Point2f>> markerCorners_, rejectedCandidates_;
-//  std::vector<int> markerIds_;
-//  cv::Ptr<cv::aruco::Dictionary> dictionary_;
-
+  //! Object detection
+  ObjectDetection object_detection_object_;
 
 };
 

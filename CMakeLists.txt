@@ -7,12 +7,16 @@ set(OpenCV_DIR "/usr/include/opencv4") # Select OpenCV with contrib
 # /opt/intel/openvino_2021.4.752/opencv/include
 
 find_package(realsense2 REQUIRED)
-find_package(OpenCV REQUIRED) # COMPONENTS aruco PATHS "/usr/lib/x86_64-linux-gnu/"
+find_package(OpenCV REQUIRED)
+find_package(InferenceEngine REQUIRED)
+find_package(ngraph REQUIRED)
+
 
 add_subdirectory(include/PoseEstimation)
+add_subdirectory(include/ObjectDetection)
+
 
 include_directories(
-#            include/PoseEstimation
             ${OpenCV_INCLUDE_DIRS}
 )
 
@@ -20,6 +24,12 @@ add_executable(realtime_pose_estimation src/main.cpp)
 
 target_link_libraries(realtime_pose_estimation
                       pose_estimation
+                      object_detection
                       ${realsense2_LIBRARY}
                       ${OpenCV_LIBS}
+                      ${InferenceEngine_LIBRARIES}
+                      ${NGRAPH_LIBRARIES}
 )
+
+target_link_libraries(pose_estimation
+                      object_detection)

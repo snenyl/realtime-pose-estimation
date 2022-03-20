@@ -16,6 +16,7 @@ void PoseEstimation::run_pose_estimation() {
 
   image_ = cv_image;
 
+  object_detection_object_.run_object_detection(image_);
   calculate_aruco();
   calculate_pose();
 
@@ -80,7 +81,7 @@ void PoseEstimation::calculate_pose() {
 
 }
 
-void PoseEstimation::set_camera_parameters() {
+void PoseEstimation::set_camera_parameters() { // TODO(simon) Not in use.
   camera_matrix_.resize(9);
   dist_coefficients_.resize(5);
 
