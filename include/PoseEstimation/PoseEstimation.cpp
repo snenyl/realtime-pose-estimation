@@ -34,15 +34,15 @@ void PoseEstimation::setup_pose_estimation() {
 }
 void PoseEstimation::calculate_aruco() {
 
-//  cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
-//  std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
-//  std::vector<int> markerIds;
+  cv::aruco::detectMarkers(image_, dictionary_, markerCorners_, markerIds_, parameters_, rejectedCandidates_);
+
+
 
 //  cv::aruco::detectMarkers(image_, dictionary_, markerCorners_, markerIds_,
 //                           parameters_, rejectedCandidates_);
 //
 //
-//  std::cout << markerCorners_.size() << std::endl;
+  std::cout << markerCorners_.size() << std::endl;
 }
 
 void PoseEstimation::calculate_pose() {

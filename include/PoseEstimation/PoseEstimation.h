@@ -36,7 +36,12 @@ class PoseEstimation {
   std::vector<double> camera_matrix_;
   std::vector<double> dist_coefficients_;
 
-  // TODO(simon) Need to make Aruco available.
+  cv::Ptr<cv::aruco::Dictionary> dictionary_ = getPredefinedDictionary(cv::aruco::DICT_APRILTAG_25h9);
+  cv::Ptr<cv::aruco::DetectorParameters> parameters_ = cv::aruco::DetectorParameters::create();
+  std::vector<std::vector<cv::Point2f>> markerCorners_, rejectedCandidates_;
+  std::vector<int> markerIds_;
+
+
 //  cv::Ptr<cv::aruco::Dictionary> dictionary_ = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_APRILTAG_25h9);
 
 //  cv::Ptr<cv::aruco::Dictionary> dictionary_ = getPredefinedDictionary(cv::aruco::DICT_APRILTAG_25h9);
