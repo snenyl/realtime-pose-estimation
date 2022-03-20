@@ -41,6 +41,12 @@ class PoseEstimation {
   std::vector<std::vector<cv::Point2f>> markerCorners_, rejectedCandidates_;
   std::vector<int> markerIds_;
 
+  float example_camera_matrix_data[9] = {907.114,0,662.66,0,907.605,367.428,0,0,1};
+  cv::Mat example_camera_matrix_ = cv::Mat(3,3,CV_32F,example_camera_matrix_data);
+
+  float example_dist_coefficients_data[5] = {0.157553,-0.501105,-0.00164696,0.000623876,0.466404};
+  cv::Mat example_dist_coefficients_ = cv::Mat(1,5,CV_32F,example_dist_coefficients_data);
+
 
 //  cv::Ptr<cv::aruco::Dictionary> dictionary_ = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_APRILTAG_25h9);
 

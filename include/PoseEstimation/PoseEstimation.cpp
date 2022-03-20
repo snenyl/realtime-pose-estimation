@@ -17,6 +17,7 @@ void PoseEstimation::run_pose_estimation() {
   image_ = cv_image;
 
   calculate_aruco();
+  calculate_pose();
 
   cv::imshow("Output",cv_image);
   cv::waitKey(33);
@@ -37,15 +38,45 @@ void PoseEstimation::calculate_aruco() {
   cv::aruco::detectMarkers(image_, dictionary_, markerCorners_, markerIds_, parameters_, rejectedCandidates_);
 
 
+  if (markerCorners_.size() > 0){
+    cv::drawMarker(image_,markerCorners_.at(0).at(0),cv::Scalar(0,0,255));
+    cv::drawMarker(image_,markerCorners_.at(0).at(1),cv::Scalar(0,0,255));
+    cv::drawMarker(image_,markerCorners_.at(0).at(2),cv::Scalar(0,0,255));
+    cv::drawMarker(image_,markerCorners_.at(0).at(3),cv::Scalar(0,0,255));
+      }
+
+
 
 //  cv::aruco::detectMarkers(image_, dictionary_, markerCorners_, markerIds_,
 //                           parameters_, rejectedCandidates_);
 //
 //
-  std::cout << markerCorners_.size() << std::endl;
+//  std::cout << markerCorners_.size() << std::endl;
 }
 
 void PoseEstimation::calculate_pose() {
+
+  std::vector<cv::Vec3d> rvecs, tvecs, object_points;
+  cv::aruco::estimatePoseSingleMarkers(markerCorners_,0.535,example_camera_matrix_,example_dist_coefficients_,rvecs,tvecs,object_points);
+  // TODO(simon) Set marker size as parameter. 0.175 0.535
+
+//  std::cout << rvecs.size() << "\n" << tvecs.size() << "\n" << object_points.size() << std::endl;
+//  std::cout << rvecs.at(0) << "\n" << tvecs.at(0) << std::endl;
+
+  if (rvecs.size() > 0 && tvecs.size() > 0){
+    std::stringstream rotation;
+    std::stringstream translation;
+
+    rotation << rvecs.at(0);
+    translation << tvecs.at(0);
+//    std::cout << rvecs.size() << "\n" << tvecs.size() << "\n" << object_points.size() << std::endl;
+//    std::cout << rvecs.at(0) << "\n" << tvecs.at(0) << std::endl;
+    cv::putText(image_,rotation.str(),cv::Point(50,50),cv::FONT_HERSHEY_DUPLEX,1,cv::Scalar(0,255,0),2,false);
+    cv::putText(image_,translation.str(),cv::Point(50,100),cv::FONT_HERSHEY_DUPLEX,1,cv::Scalar(0,255,0),2,false);
+    cv::aruco::drawAxis(image_,example_camera_matrix_,example_dist_coefficients_,rvecs,tvecs,0.1);
+  }
+
+//  cv::aruco::drawAxis(image_,example_camera_matrix,example_dist_coefficients,rvecs,tvecs,0.1);
 
 }
 
