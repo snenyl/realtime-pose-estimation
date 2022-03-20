@@ -16,7 +16,7 @@ void PoseEstimation::run_pose_estimation() {
 
   image_ = cv_image;
 
-  object_detection_object_.run_object_detection(image_);
+//  object_detection_object_.run_object_detection(image_);
   calculate_aruco();
   calculate_pose();
 
@@ -28,6 +28,7 @@ void PoseEstimation::run_pose_estimation() {
 void PoseEstimation::setup_pose_estimation() {
   p.start();
   set_camera_parameters();
+  object_detection_object_.setup_object_detection();
 
 //  dictionary_ = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_APRILTAG_25h9);
 
@@ -58,7 +59,7 @@ void PoseEstimation::calculate_aruco() {
 void PoseEstimation::calculate_pose() {
 
   std::vector<cv::Vec3d> rvecs, tvecs, object_points;
-  cv::aruco::estimatePoseSingleMarkers(markerCorners_,0.535,example_camera_matrix_,example_dist_coefficients_,rvecs,tvecs,object_points);
+  cv::aruco::estimatePoseSingleMarkers(markerCorners_,0.175,example_camera_matrix_,example_dist_coefficients_,rvecs,tvecs,object_points);
   // TODO(simon) Set marker size as parameter. 0.175 0.535
 
 //  std::cout << rvecs.size() << "\n" << tvecs.size() << "\n" << object_points.size() << std::endl;
@@ -68,7 +69,14 @@ void PoseEstimation::calculate_pose() {
     std::stringstream rotation;
     std::stringstream translation;
 
-    rotation << rvecs.at(0);
+    float rvecs_deg[3];
+
+    for (int i = 0; i < 3; ++i) {
+      rvecs_deg[i] = rvecs.at(0)[i]*57.2958;
+    }
+
+//    rotation << rvecs.at(0);
+    rotation << "[" << rvecs_deg[0] << ", " << rvecs_deg[1] << ", " << rvecs_deg[2] << "]";
     translation << tvecs.at(0);
 //    std::cout << rvecs.size() << "\n" << tvecs.size() << "\n" << object_points.size() << std::endl;
 //    std::cout << rvecs.at(0) << "\n" << tvecs.at(0) << std::endl;

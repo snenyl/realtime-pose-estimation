@@ -27,9 +27,9 @@ target_link_libraries(realtime_pose_estimation
                       object_detection
                       ${realsense2_LIBRARY}
                       ${OpenCV_LIBS}
-                      ${InferenceEngine_LIBRARIES}
-                      ${NGRAPH_LIBRARIES}
+
 )
 
 target_link_libraries(pose_estimation
                       object_detection)
+
