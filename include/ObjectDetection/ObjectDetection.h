@@ -34,10 +34,20 @@ struct GridAndStride
   int stride;
 };
 
+struct object_detection_output {
+  uint16_t x;
+  uint16_t y;
+  uint16_t width;
+  uint16_t height;
+  double confidence;
+};
+
 class ObjectDetection {
  public:
   void setup_object_detection();
   void run_object_detection(cv::Mat &image);
+
+  object_detection_output get_detection();
 
  private:
 
@@ -74,6 +84,8 @@ class ObjectDetection {
 
   std::string input_name_;
   std::string output_name_;
+
+  std::vector<object_detection_output> detection_output_struct_;
 
 };
 

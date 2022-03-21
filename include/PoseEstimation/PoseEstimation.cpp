@@ -12,6 +12,11 @@ void PoseEstimation::run_pose_estimation() {
   realsense_points_ = realsense_pointcloud_.calculate(depth);
   pcl_points_ = points_to_pcl(realsense_points_);
 
+  detection_output_struct_ = object_detection_object_.get_detection();
+
+  calculate_3d_crop();
+
+
 //  edit_pointcloud();
   view_pointcloud();
 
@@ -43,7 +48,8 @@ void PoseEstimation::run_pose_estimation() {
 
 }
 void PoseEstimation::setup_pose_estimation() {
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag";
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag";
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 
   if (load_from_rosbag){
     std::cout << "Loaded rosbag: " << rosbag_path_ << std::endl;
@@ -228,5 +234,90 @@ void PoseEstimation::view_pointcloud() {
   viewer_->removeAllPointClouds();
   viewer_->addPointCloud(pcl_points_);
   viewer_->spinOnce(100);
+
+}
+void PoseEstimation::calculate_3d_crop() {
+
+  std::vector<Eigen::Vector2d> detection_point_vec(4);
+  std::vector<Eigen::Vector2d> detection_from_image_center;
+  double detection_vector_scale = 2; // TODO(simon) Should be a parameter.
+
+  Eigen::Vector2d image_center(zed_k_matrix_[2],
+                               zed_k_matrix_[3]);
+
+  detection_point_vec.at(0).x() = detection_output_struct_.x;
+  detection_point_vec.at(0).y() = detection_output_struct_.y;
+
+  detection_point_vec.at(1).x() = detection_output_struct_.x + detection_output_struct_.width;
+  detection_point_vec.at(1).y() = detection_output_struct_.y;
+
+  detection_point_vec.at(2).x() = detection_output_struct_.x;
+  detection_point_vec.at(2).y() = detection_output_struct_.y + detection_output_struct_.height;
+
+  detection_point_vec.at(3).x() = detection_output_struct_.x + detection_output_struct_.width;
+  detection_point_vec.at(3).y() = detection_output_struct_.y + detection_output_struct_.height;
+
+  for (int i = 0; i < 4; ++i) {
+    detection_from_image_center.emplace_back((detection_point_vec.at(i) - image_center) / zed_k_matrix_[0]);
+    detection_from_image_center.at(i).y() *= -1; // TODO(simon) This is a hack to invert the y-axis.
+    square_frustum_detection_points_.emplace_back(detection_from_image_center.at(i).x()*detection_vector_scale,
+                                                  detection_from_image_center.at(i).y()*detection_vector_scale,
+                                                  -1*detection_vector_scale);
+  }
+
+
+  Eigen::Vector3f vector_0(square_frustum_detection_points_.at(0).x,
+                           square_frustum_detection_points_.at(0).y,
+                           square_frustum_detection_points_.at(0).z);
+
+  Eigen::Vector3f vector_1(square_frustum_detection_points_.at(1).x,
+                           square_frustum_detection_points_.at(1).y,
+                           square_frustum_detection_points_.at(1).z);
+
+  Eigen::Vector3f vector_2(square_frustum_detection_points_.at(2).x,
+                           square_frustum_detection_points_.at(2).y,
+                           square_frustum_detection_points_.at(2).z);
+
+  Eigen::Vector3f vector_3(square_frustum_detection_points_.at(3).x,
+                           square_frustum_detection_points_.at(3).y,
+                           square_frustum_detection_points_.at(3).z);
+
+  for (int i = 0; i < 4; ++i) {
+    center_frustum_.x += square_frustum_detection_points_.at(i).x;
+    center_frustum_.y += square_frustum_detection_points_.at(i).y;
+    center_frustum_.z += square_frustum_detection_points_.at(i).z;
+  }
+  center_frustum_.x /= 4;
+  center_frustum_.y /= 4;
+  center_frustum_.z /= 4;
+
+  Eigen::Vector3f vector_center(center_frustum_.x,
+                                center_frustum_.y,
+                                center_frustum_.z);
+
+
+  Eigen::Vector3f vector_camera_front(1,0,0);
+
+  std::cout << "Vector 0: " << vector_0 << std::endl;
+  std::cout << "Vector 1: " << vector_1 << std::endl;
+  std::cout << "Vector 2: " << vector_2 << std::endl;
+  std::cout << "Vector 3: " << vector_3 << std::endl;
+  std::cout << "vector_center: " << vector_center << std::endl;
+
+  float dot_01 = vector_0.dot(vector_1);
+  float dot_02 = vector_0.dot(vector_2);
+
+  float len_sq_0 = vector_0.norm();
+  float len_sq_1 = vector_1.norm();
+  float len_sq_2 = vector_2.norm();
+
+  float angle_01 = std::acos(dot_01/(len_sq_0*len_sq_1));
+  float angle_02 = std::acos(dot_02/(len_sq_0*len_sq_2));
+
+//  std::cout << "dot: " << dot << " len_sq_0: " << len_sq_0 << " len_sq_1: " << len_sq_1 << " Angle: " << angle << std::endl;
+  std::cout << "angle_01: " << angle_01*57.2958 << " angle_02: " << angle_02*57.2958 << std::endl;
+
+  fov_h_rad_ = angle_01;
+  fov_v_rad_ = angle_02;
 
 }

@@ -75,6 +75,8 @@ class PoseEstimation {
   //! Object detection
   ObjectDetection object_detection_object_;
 
+  object_detection_output detection_output_struct_;
+
   //! Pose Estimation
     //! Point cloud
     rs2::pointcloud realsense_pointcloud_;
@@ -92,6 +94,7 @@ class PoseEstimation {
     //! Plane_estimation
     std::vector<float> ransac_model_coefficients_;
     pcl::PointXYZ plane_vector_intersect_;
+    double zed_k_matrix_[4] = {529.34,529.05,646.7450,350.3870}; // TODO(simon) Get from camera.
 
     float fov_v_rad_;
     float fov_h_rad_;

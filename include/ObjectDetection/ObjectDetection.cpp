@@ -316,10 +316,12 @@ void ObjectDetection::draw_objects(const cv::Mat &bgr, const std::vector<Object>
       "pallet"
   };
 
+  detection_output_struct_.resize(objects.size());
 
   for (size_t i = 0; i < objects.size(); i++)
   {
     const Object& obj = objects[i];
+
 
 //    fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f\n", obj.label, obj.prob,
 //            obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
@@ -353,10 +355,36 @@ void ObjectDetection::draw_objects(const cv::Mat &bgr, const std::vector<Object>
 
     cv::rectangle(bgr, cv::Rect(cv::Point(x, y), cv::Size(label_size.width, label_size.height + baseLine)),
                   txt_bk_color, -1);
+    // obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height
+    detection_output_struct_.at(i).x = obj.rect.x;
+    detection_output_struct_.at(i).y = obj.rect.y;
+    detection_output_struct_.at(i).width = obj.rect.width;
+    detection_output_struct_.at(i).height = obj.rect.height;
+    detection_output_struct_.at(i).confidence = static_cast<double>(obj.prob);
 
     cv::putText(bgr, text, cv::Point(x, y + label_size.height),
                 cv::FONT_HERSHEY_SIMPLEX, 0.4, txt_color, 1);
   }
 
+}
+object_detection_output ObjectDetection::get_detection() {
+
+  double max_confidence = 0;
+  int iterator_max_confidence = 0;
+
+  if (detection_output_struct_.empty()){
+    for (int i = 0; i < detection_output_struct_.size(); ++i) {
+      if (detection_output_struct_.at(i).confidence > max_confidence){
+        max_confidence = detection_output_struct_.at(i).confidence;
+        iterator_max_confidence = i;
+      }
+    }
+  }
+
+  if (!detection_output_struct_.empty()) {
+    return detection_output_struct_.at(iterator_max_confidence);
+  }
+  object_detection_output non_detect{1,1,1,1,1.0};
+  return non_detect;
 }
 
