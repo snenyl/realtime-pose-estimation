@@ -47,15 +47,17 @@ class PoseEstimation {
   void calculate_pose_vector();
   void calculate_3d_crop();
   pcl::PointCloud<pcl::PointXYZ>::Ptr points_to_pcl(const rs2::points& points);
+  void set_3d_aruco_a();
   void view_pointcloud();
 
   bool load_from_rosbag = true;
 
 
-
+  //! Camera
   rs2::pipeline p;
   cv::Mat image_;
   std::string rosbag_path_;
+  rs2_intrinsics intrinsics_;
 
   //! Aruco variables
   std::vector<double> camera_matrix_;
@@ -71,6 +73,12 @@ class PoseEstimation {
 
   float example_dist_coefficients_data[5] = {0.157553,-0.501105,-0.00164696,0.000623876,0.466404};
   cv::Mat example_dist_coefficients_ = cv::Mat(1,5,CV_32F,example_dist_coefficients_data);
+
+  std::vector<cv::Vec<double,3>> rvecs_;
+  std::vector<cv::Vec<double,3>> tvecs_;
+
+  Eigen::Affine3f rot_trans_matrix_;
+
 
   //! Object detection
   ObjectDetection object_detection_object_;
@@ -95,9 +103,12 @@ class PoseEstimation {
     std::vector<float> ransac_model_coefficients_;
     pcl::PointXYZ plane_vector_intersect_;
     double zed_k_matrix_[4] = {529.34,529.05,646.7450,350.3870}; // TODO(simon) Get from camera.
+    std::vector<Eigen::Vector2d> detection_from_image_center_;
+    double detection_vector_scale_ = 2;
 
     float fov_v_rad_;
     float fov_h_rad_;
+
 
 
 };

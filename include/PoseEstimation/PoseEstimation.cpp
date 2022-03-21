@@ -14,6 +14,12 @@ void PoseEstimation::run_pose_estimation() {
 
   detection_output_struct_ = object_detection_object_.get_detection();
 
+//  std::cout << "X: " << detection_output_struct_.x << std::endl;
+//  std::cout << "Y: " << detection_output_struct_.y << std::endl;
+//  std::cout << "Width: " << detection_output_struct_.width << std::endl;
+//  std::cout << "Height: " << detection_output_struct_.height << std::endl;
+//  std::cout << "Confidence: " << detection_output_struct_.confidence << std::endl;
+
   calculate_3d_crop();
 
 
@@ -48,7 +54,8 @@ void PoseEstimation::run_pose_estimation() {
 
 }
 void PoseEstimation::setup_pose_estimation() {
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag";
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_151307.bag";
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 
   if (load_from_rosbag){
@@ -59,6 +66,8 @@ void PoseEstimation::setup_pose_estimation() {
     p.start(cfg);
 
   } else p.start();
+
+//  rs2_get_video_stream_intrinsics()
 
   set_camera_parameters();
   
@@ -95,15 +104,19 @@ void PoseEstimation::calculate_aruco() {
 void PoseEstimation::calculate_pose() {
 
   std::vector<cv::Vec3d> rvecs, tvecs, object_points;
-  cv::aruco::estimatePoseSingleMarkers(markerCorners_,0.175,example_camera_matrix_,example_dist_coefficients_,rvecs,tvecs,object_points);
+  cv::aruco::estimatePoseSingleMarkers(markerCorners_,0.535,example_camera_matrix_,example_dist_coefficients_,rvecs,tvecs,object_points);
   // TODO(simon) Set marker size as parameter. 0.175 0.535
 
 //  std::cout << rvecs.size() << "\n" << tvecs.size() << "\n" << object_points.size() << std::endl;
 //  std::cout << rvecs.at(0) << "\n" << tvecs.at(0) << std::endl;
 
-  if (rvecs.size() > 0 && tvecs.size() > 0){
+
+  if (!rvecs.empty() && !tvecs.empty()){
     std::stringstream rotation;
     std::stringstream translation;
+
+    rvecs_ = rvecs;
+    tvecs_ = tvecs;
 
     float rvecs_deg[3];
 
@@ -232,15 +245,56 @@ void PoseEstimation::view_pointcloud() {
 
   viewer_->removeAllShapes();
   viewer_->removeAllPointClouds();
+  viewer_->removeCoordinateSystem("aruco_marker",0);
   viewer_->addPointCloud(pcl_points_);
+
+  if (!rvecs_.empty() && !tvecs_.empty()){
+//    std::cout << "RVECS: " << rvecs_.at(0) << std::endl;
+//    std::cout << "TVECS: " << tvecs_.at(0) << std::endl;
+//    viewer_->addCoordinateSystem(0.535,0.128196, 0.0394752, 0.815717,"aruco_marker",0);
+
+    rot_trans_matrix_.translation()[0] = static_cast<float>(tvecs_.at(0)[0]);
+    rot_trans_matrix_.translation()[1] = static_cast<float>(tvecs_.at(0)[1]);
+    rot_trans_matrix_.translation()[2] = static_cast<float>(tvecs_.at(0)[2]);
+
+//    rot_trans_matrix_.linear() = ( Eigen::AngleAxisd(3.1415 / 6, Eigen::Vector3d::UnitY()) *
+//                                   Eigen::AngleAxisd(3.1415 / 6, Eigen::Vector3d::UnitX()) ).toRotationMatrix();
+
+
+//    rot_trans_matrix.fromPositionOrientationScale((1,1,1),(1,1,1),(1,1,1));
+
+    viewer_->addCoordinateSystem(0.535,rot_trans_matrix_,"aruco_marker",0);
+//    viewer_->addCoordinateSystem(0.535,tvecs_.at(0)[0], tvecs_.at(0)[1], tvecs_.at(0)[2],"aruco_marker",0);
+  }
+
+
+
+  if (!square_frustum_detection_points_.empty()){
+    viewer_->addLine(pcl::PointXYZ(0,0,0),
+                     square_frustum_detection_points_.at(0),255,255,0,
+                     "line",0);
+    viewer_->addLine(pcl::PointXYZ(0,0,0),
+                     square_frustum_detection_points_.at(1),255,255,0,
+                     "line1",0);
+    viewer_->addLine(pcl::PointXYZ(0,0,0),
+                     square_frustum_detection_points_.at(2),255,255,0,
+                     "line2",0);
+    viewer_->addLine(pcl::PointXYZ(0,0,0),
+                     square_frustum_detection_points_.at(3),255,255,0,
+                     "line3",0);
+    viewer_->addLine(pcl::PointXYZ(0,0,0),
+                     center_frustum_,255,0,0,
+                     "line_center",0);
+  }
+
+
+
   viewer_->spinOnce(100);
 
 }
 void PoseEstimation::calculate_3d_crop() {
 
   std::vector<Eigen::Vector2d> detection_point_vec(4);
-  std::vector<Eigen::Vector2d> detection_from_image_center;
-  double detection_vector_scale = 2; // TODO(simon) Should be a parameter.
 
   Eigen::Vector2d image_center(zed_k_matrix_[2],
                                zed_k_matrix_[3]);
@@ -258,11 +312,11 @@ void PoseEstimation::calculate_3d_crop() {
   detection_point_vec.at(3).y() = detection_output_struct_.y + detection_output_struct_.height;
 
   for (int i = 0; i < 4; ++i) {
-    detection_from_image_center.emplace_back((detection_point_vec.at(i) - image_center) / zed_k_matrix_[0]);
-    detection_from_image_center.at(i).y() *= -1; // TODO(simon) This is a hack to invert the y-axis.
-    square_frustum_detection_points_.emplace_back(detection_from_image_center.at(i).x()*detection_vector_scale,
-                                                  detection_from_image_center.at(i).y()*detection_vector_scale,
-                                                  -1*detection_vector_scale);
+    detection_from_image_center_.emplace_back((detection_point_vec.at(i) - image_center) / zed_k_matrix_[0]);
+    detection_from_image_center_.at(i).y() *= -1; // TODO(simon) This is a hack to invert the y-axis.
+    square_frustum_detection_points_.emplace_back(detection_from_image_center_.at(i).x()*detection_vector_scale_,
+                                                  detection_from_image_center_.at(i).y()*detection_vector_scale_,
+                                                  -1*detection_vector_scale_);
   }
 
 
@@ -298,11 +352,11 @@ void PoseEstimation::calculate_3d_crop() {
 
   Eigen::Vector3f vector_camera_front(1,0,0);
 
-  std::cout << "Vector 0: " << vector_0 << std::endl;
-  std::cout << "Vector 1: " << vector_1 << std::endl;
-  std::cout << "Vector 2: " << vector_2 << std::endl;
-  std::cout << "Vector 3: " << vector_3 << std::endl;
-  std::cout << "vector_center: " << vector_center << std::endl;
+//  std::cout << "Vector 0: " << vector_0 << std::endl;
+//  std::cout << "Vector 1: " << vector_1 << std::endl;
+//  std::cout << "Vector 2: " << vector_2 << std::endl;
+//  std::cout << "Vector 3: " << vector_3 << std::endl;
+//  std::cout << "vector_center: " << vector_center << std::endl;
 
   float dot_01 = vector_0.dot(vector_1);
   float dot_02 = vector_0.dot(vector_2);
@@ -315,7 +369,7 @@ void PoseEstimation::calculate_3d_crop() {
   float angle_02 = std::acos(dot_02/(len_sq_0*len_sq_2));
 
 //  std::cout << "dot: " << dot << " len_sq_0: " << len_sq_0 << " len_sq_1: " << len_sq_1 << " Angle: " << angle << std::endl;
-  std::cout << "angle_01: " << angle_01*57.2958 << " angle_02: " << angle_02*57.2958 << std::endl;
+//  std::cout << "angle_01: " << angle_01*57.2958 << " angle_02: " << angle_02*57.2958 << std::endl;
 
   fov_h_rad_ = angle_01;
   fov_v_rad_ = angle_02;
