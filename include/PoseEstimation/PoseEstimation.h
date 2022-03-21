@@ -9,6 +9,16 @@
 #include "librealsense2/rs.hpp"
 #include "opencv2/opencv.hpp"
 #include "opencv2/aruco.hpp"
+#include <pcl/common/common_headers.h>
+#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/point_types.h>
+//#include <pcl/sample_consensus/ransac.h>
+//#include <pcl/sample_consensus/sac_model_plane.h>
+#include <pcl/sample_consensus/sac_model_perpendicular_plane.h>
+#include <pcl/conversions.h>
+#include <pcl/ModelCoefficients.h>
+#include <pcl/filters/frustum_culling.h>
 
 #include "ObjectDetection.h"
 
@@ -29,6 +39,15 @@ class PoseEstimation {
   void calculate_pose();
   void set_camera_parameters();
 
+  //! Pose estimation functions
+  void load_pointcloud();
+  void edit_pointcloud();
+  void calculate_ransac();
+  void calculate_rotation();
+  void calculate_pose_vector();
+  void calculate_3d_crop();
+  pcl::PointCloud<pcl::PointXYZ>::Ptr points_to_pcl(const rs2::points& points);
+  void view_pointcloud();
 
   bool load_from_rosbag = true;
 
@@ -55,6 +74,28 @@ class PoseEstimation {
 
   //! Object detection
   ObjectDetection object_detection_object_;
+
+  //! Pose Estimation
+    //! Point cloud
+    rs2::pointcloud realsense_pointcloud_;
+    rs2::points realsense_points_;
+    boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> pcl_points_;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr_;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_pallet_;
+    pcl::visualization::PCLVisualizer::Ptr viewer_;
+
+    std::vector<pcl::PointXYZ> square_frustum_detection_points_;
+    pcl::PointXYZ center_frustum_;
+
+    bool first_run_ = true;
+
+    //! Plane_estimation
+    std::vector<float> ransac_model_coefficients_;
+    pcl::PointXYZ plane_vector_intersect_;
+
+    float fov_v_rad_;
+    float fov_h_rad_;
+
 
 };
 

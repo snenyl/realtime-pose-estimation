@@ -7,6 +7,14 @@
 void PoseEstimation::run_pose_estimation() {
   rs2::frameset frames = p.wait_for_frames();
   rs2::video_frame image = frames.get_color_frame();
+  rs2::depth_frame depth = frames.get_depth_frame();
+
+  realsense_points_ = realsense_pointcloud_.calculate(depth);
+  pcl_points_ = points_to_pcl(realsense_points_);
+
+//  edit_pointcloud();
+  view_pointcloud();
+
 
   const int w = image.as<rs2::video_frame>().get_width();
   const int h = image.as<rs2::video_frame>().get_height();
@@ -19,6 +27,15 @@ void PoseEstimation::run_pose_estimation() {
   object_detection_object_.run_object_detection(image_);
   calculate_aruco();
   calculate_pose();
+
+  int iterator;
+  iterator++;
+  if (iterator > 10){ // TODO(simon) Debugging iterator.
+//    std::cout << "hello!" << std::endl;
+    iterator = 0;
+  }
+
+
 
   cv::imshow("Output",cv_image);
   cv::waitKey(33);
@@ -40,6 +57,8 @@ void PoseEstimation::setup_pose_estimation() {
   set_camera_parameters();
   
   object_detection_object_.setup_object_detection();
+  pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+  viewer_ = viewer;
 
 //  dictionary_ = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_APRILTAG_25h9);
 
@@ -122,5 +141,92 @@ void PoseEstimation::set_camera_parameters() { // TODO(simon) Not in use.
 //  Color:  [ 1280x720  p[662.66 367.428]  f[907.114 907.605]  Brown Conrady [0.157553 -0.501105 -0.00164696 0.000623876 0.466404] ]
 //  Depth:  [ 640x480  p[315.527 255.336]  f[457.488 456.41]  None [0 0 0 0 0] ]
 //  camera_matrix_.at(0) =
+
+}
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr PoseEstimation::points_to_pcl(const rs2::points &points) {
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+  auto sp = points.get_profile().as<rs2::video_stream_profile>();
+  cloud->width = sp.width();
+  cloud->height = sp.height();
+  cloud->is_dense = false;
+  cloud->points.resize(points.size());
+  auto ptr = points.get_vertices();
+  for (auto& p : cloud->points)
+  {
+    p.x = ptr->x;
+    p.y = ptr->y;
+    p.z = ptr->z;
+    ptr++;
+  }
+
+  return cloud;
+}
+void PoseEstimation::edit_pointcloud() {
+  pcl::FrustumCulling<pcl::PointXYZ> frustum_filter;
+//  pcl::PointCloud<pcl::PointXYZ>::Ptr local_pallet(new pcl::PointCloud<pcl::PointXYZ>);
+
+  Eigen::Matrix4f camera_pose;
+  Eigen::Matrix4f rotation_red_pos_ccw;
+  Eigen::Matrix4f rotation_green_pos_cw;
+  Eigen::Matrix4f cam2robot;
+
+  cam2robot <<   0, 0, 1, 0,
+                 0,-1, 0, 0,
+                 1, 0, 0, 0,
+                 0, 0, 0, 1;
+
+  camera_pose << -1, 0,  0, 0,
+                  0, 1,  0, 0,
+                  0, 0, -1, 0,
+                  0, 0,  0, 1;
+
+  float rot_red_rad = 0.35;
+  float rot_green_rad = -0.10;
+
+  rotation_red_pos_ccw << std::cos(rot_red_rad),-std::sin(rot_red_rad), 0,0,
+                          std::sin(rot_red_rad), std::cos(rot_red_rad), 0,0,
+                          0, 0, 1,  0,
+                          0, 0,  0, 1;
+
+  rotation_green_pos_cw << std::cos(rot_green_rad), 0,-std::sin(rot_green_rad), 0,
+                          0,                         1,                          0, 0,
+                          std::sin(rot_green_rad), 0, std::cos(rot_green_rad), 0,
+                          0,                         0,                          0, 1;
+
+  frustum_filter.setInputCloud(cloud_ptr_);
+  frustum_filter.setCameraPose(camera_pose*cam2robot*rotation_red_pos_ccw*rotation_green_pos_cw);
+  frustum_filter.setNearPlaneDistance(0);
+  frustum_filter.setFarPlaneDistance(15);
+  frustum_filter.setVerticalFOV(fov_v_rad_ * 57.2958);
+  frustum_filter.setHorizontalFOV(fov_h_rad_ * 57.2958);
+//  frustum_filter.filter(*local_pallet);
+
+
+  std::cout << "cloud_ptr_ size: " << cloud_ptr_->height * cloud_ptr_->width << std::endl;
+//  std::cout << "local_pallet size: " << local_pallet->height * local_pallet->width << std::endl;
+//  std::cout << "local_pallet size MB: " << sizeof(local_pallet) << std::endl;
+  std::cout << "cloud_ptr_ size: " << *cloud_ptr_ << std::endl;
+
+  frustum_filter.setInputCloud(pcl_points_);
+
+
+}
+void PoseEstimation::view_pointcloud() {
+
+    if (first_run_){
+    viewer_->setBackgroundColor (0, 0, 0);
+    viewer_->addCoordinateSystem (1);
+    viewer_->initCameraParameters();
+    viewer_->setCameraPosition(0, 10, 0,    0, 0, 0,   0, 0, 1);
+    first_run_ = false;
+  }
+
+  viewer_->removeAllShapes();
+  viewer_->removeAllPointClouds();
+  viewer_->addPointCloud(pcl_points_);
+  viewer_->spinOnce(100);
 
 }

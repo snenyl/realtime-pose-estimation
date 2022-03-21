@@ -321,8 +321,8 @@ void ObjectDetection::draw_objects(const cv::Mat &bgr, const std::vector<Object>
   {
     const Object& obj = objects[i];
 
-    fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f\n", obj.label, obj.prob,
-            obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
+//    fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f\n", obj.label, obj.prob,
+//            obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
 
     cv::Scalar color = cv::Scalar(100, 100,100);
     float c_mean = cv::mean(color)[0];

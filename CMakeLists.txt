@@ -10,6 +10,7 @@ find_package(realsense2 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(InferenceEngine REQUIRED)
 find_package(ngraph REQUIRED)
+find_package(PCL REQUIRED )
 
 
 add_subdirectory(include/PoseEstimation)
@@ -18,6 +19,7 @@ add_subdirectory(include/ObjectDetection)
 
 include_directories(
             ${OpenCV_INCLUDE_DIRS}
+            ${PCL_INCLUDE_DIRS}
 )
 
 add_executable(realtime_pose_estimation src/main.cpp)
@@ -27,6 +29,7 @@ target_link_libraries(realtime_pose_estimation
                       object_detection
                       ${realsense2_LIBRARY}
                       ${OpenCV_LIBS}
+                      ${PCL_LIBRARIES}
 
 )
 
