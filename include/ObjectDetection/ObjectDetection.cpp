@@ -67,6 +67,7 @@ void ObjectDetection::run_object_detection(cv::Mat &image) {
   float scale = std::min(input_dimensions_.width / (image.cols*1.0), input_dimensions_.height / (image.rows*1.0));
 
   decode_outputs(net_pred, objects_, scale, img_w, img_h);
+  draw_objects(image,objects_);
 
 
 }
@@ -128,34 +129,36 @@ void ObjectDetection::decode_outputs(const float *prob,
   generate_yolox_proposals(grid_strides, prob,  bbox_conf_threshold_, proposals);
   qsort_descent_inplace(proposals, 0, 0); // TODO(simon) Getting: "Process finished with exit code 139 (interrupted by signal 11: SIGSEGV)"
 
-//
-//  std::vector<int> picked;
-//  nms_sorted_bboxes(proposals, picked, nms_threshold_);
-//  int count = picked.size();
-//  objects.resize(count);
-//
-//  for (int i = 0; i < count; i++)
-//  {
-//    objects[i] = proposals[picked[i]];
-//
-//    // adjust offset to original unpadded
-//    float x0 = (objects[i].rect.x) / scale;
-//    float y0 = (objects[i].rect.y) / scale;
-//    float x1 = (objects[i].rect.x + objects[i].rect.width) / scale;
-//    float y1 = (objects[i].rect.y + objects[i].rect.height) / scale;
-//
-//    // clip
-//    x0 = std::max(std::min(x0, (float)(img_w - 1)), 0.f);
-//    y0 = std::max(std::min(y0, (float)(img_h - 1)), 0.f);
-//    x1 = std::max(std::min(x1, (float)(img_w - 1)), 0.f);
-//    y1 = std::max(std::min(y1, (float)(img_h - 1)), 0.f);
-//
-//    objects[i].rect.x = x0;
-//    objects[i].rect.y = y0;
-//    objects[i].rect.width = x1 - x0;
-//    objects[i].rect.height = y1 - y0;
-//  }
-//
+
+  std::vector<int> picked;
+  nms_sorted_bboxes(proposals, picked, nms_threshold_);
+  int count = picked.size();
+  objects.resize(count);
+
+  for (int i = 0; i < count; i++)
+  {
+    objects[i] = proposals[picked[i]];
+
+    // adjust offset to original unpadded
+    float x0 = (objects[i].rect.x) / scale;
+    float y0 = (objects[i].rect.y) / scale;
+    float x1 = (objects[i].rect.x + objects[i].rect.width) / scale;
+    float y1 = (objects[i].rect.y + objects[i].rect.height) / scale;
+
+    // clip
+    x0 = std::max(std::min(x0, (float)(img_w - 1)), 0.f);
+    y0 = std::max(std::min(y0, (float)(img_h - 1)), 0.f);
+    x1 = std::max(std::min(x1, (float)(img_w - 1)), 0.f);
+    y1 = std::max(std::min(y1, (float)(img_h - 1)), 0.f);
+
+    objects[i].rect.x = x0;
+    objects[i].rect.y = y0;
+    objects[i].rect.width = x1 - x0;
+    objects[i].rect.height = y1 - y0;
+
+
+  }
+
 
 
 }
@@ -233,39 +236,39 @@ void ObjectDetection::qsort_descent_inplace(std::vector<Object> &objects) {
   qsort_descent_inplace(objects, 0, objects.size() - 1);
 }
 void ObjectDetection::qsort_descent_inplace(std::vector<Object> &faceobjects, int left, int right) { // TODO(simon) This gives error.
-//  int i = left;
-//  int j = right;
-//  float p = faceobjects[(left + right) / 2].prob;
-//
-//  while (i <= j)
-//  {
-//    while (faceobjects[i].prob > p)
-//      i++;
-//
-//    while (faceobjects[j].prob < p)
-//      j--;
-//
-//    if (i <= j)
-//    {
-//      // swap
-//      std::swap(faceobjects[i], faceobjects[j]);
-//
-//      i++;
-//      j--;
-//    }
-//  }
-//
-//#pragma omp parallel sections
-//  {
-//#pragma omp section
-//    {
-//      if (left < j) qsort_descent_inplace(faceobjects, left, j);
-//    }
-//#pragma omp section
-//    {
-//      if (i < right) qsort_descent_inplace(faceobjects, i, right);
-//    }
-//  }
+  int i = left;
+  int j = right;
+  float p = faceobjects[(left + right) / 2].prob;
+
+  while (i <= j)
+  {
+    while (faceobjects[i].prob > p)
+      i++;
+
+    while (faceobjects[j].prob < p)
+      j--;
+
+    if (i <= j)
+    {
+      // swap
+      std::swap(faceobjects[i], faceobjects[j]);
+
+      i++;
+      j--;
+    }
+  }
+
+#pragma omp parallel sections
+  {
+#pragma omp section
+    {
+      if (left < j) qsort_descent_inplace(faceobjects, left, j);
+    }
+#pragma omp section
+    {
+      if (i < right) qsort_descent_inplace(faceobjects, i, right);
+    }
+  }
 }
 void ObjectDetection::nms_sorted_bboxes(const std::vector<Object> &faceobjects,
                                         std::vector<int> &picked,
@@ -305,5 +308,55 @@ void ObjectDetection::nms_sorted_bboxes(const std::vector<Object> &faceobjects,
 float ObjectDetection::intersection_area(const Object &a, const Object &b) {
   cv::Rect_<float> inter = a.rect & b.rect;
   return inter.area();
+}
+
+void ObjectDetection::draw_objects(const cv::Mat &bgr, const std::vector<Object> &objects) {
+
+  static const char* class_names[] = {
+      "pallet"
+  };
+
+
+  for (size_t i = 0; i < objects.size(); i++)
+  {
+    const Object& obj = objects[i];
+
+    fprintf(stderr, "%d = %.5f at %.2f %.2f %.2f x %.2f\n", obj.label, obj.prob,
+            obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
+
+    cv::Scalar color = cv::Scalar(100, 100,100);
+    float c_mean = cv::mean(color)[0];
+    cv::Scalar txt_color;
+    if (c_mean > 0.5){
+      txt_color = cv::Scalar(0, 0, 0);
+    }else{
+      txt_color = cv::Scalar(255, 255, 255);
+    }
+
+    cv::rectangle(bgr, obj.rect, color * 255, 2);
+
+    char text[256];
+    sprintf(text, "%s %.1f%%", class_names[obj.label], obj.prob * 100);
+
+    int baseLine = 0;
+    cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseLine);
+
+    cv::Scalar txt_bk_color = color * 0.7 * 255;
+
+    int x = obj.rect.x;
+    int y = obj.rect.y + 1;
+    //int y = obj.rect.y - label_size.height - baseLine;
+    if (y > bgr.rows)
+      y = bgr.rows;
+    //if (x + label_size.width > image.cols)
+    //x = image.cols - label_size.width;
+
+    cv::rectangle(bgr, cv::Rect(cv::Point(x, y), cv::Size(label_size.width, label_size.height + baseLine)),
+                  txt_bk_color, -1);
+
+    cv::putText(bgr, text, cv::Point(x, y + label_size.height),
+                cv::FONT_HERSHEY_SIMPLEX, 0.4, txt_color, 1);
+  }
+
 }
 

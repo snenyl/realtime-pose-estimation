@@ -30,9 +30,13 @@ class PoseEstimation {
   void set_camera_parameters();
 
 
+  bool load_from_rosbag = true;
+
+
 
   rs2::pipeline p;
   cv::Mat image_;
+  std::string rosbag_path_;
 
   //! Aruco variables
   std::vector<double> camera_matrix_;

@@ -50,6 +50,7 @@ class ObjectDetection {
   void qsort_descent_inplace(std::vector<Object>& faceobjects, int left, int right);
   void nms_sorted_bboxes(const std::vector<Object>& faceobjects, std::vector<int>& picked, float nms_threshold);
   inline float intersection_area(const Object& a, const Object& b);
+  void draw_objects(const cv::Mat& bgr, const std::vector<Object>& objects);
 
   //! Settings
 

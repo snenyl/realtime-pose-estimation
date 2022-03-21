@@ -16,7 +16,7 @@ void PoseEstimation::run_pose_estimation() {
 
   image_ = cv_image;
 
-//  object_detection_object_.run_object_detection(image_);
+  object_detection_object_.run_object_detection(image_);
   calculate_aruco();
   calculate_pose();
 
@@ -26,8 +26,19 @@ void PoseEstimation::run_pose_estimation() {
 
 }
 void PoseEstimation::setup_pose_estimation() {
-  p.start();
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag";
+
+  if (load_from_rosbag){
+    std::cout << "Loaded rosbag: " << rosbag_path_ << std::endl;
+//    p.stop(); // TODO(simon) check if stream is running. p.get_active_profile().get_device()
+    rs2::config cfg;
+    cfg.enable_device_from_file(rosbag_path_);
+    p.start(cfg);
+
+  } else p.start();
+
   set_camera_parameters();
+  
   object_detection_object_.setup_object_detection();
 
 //  dictionary_ = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_APRILTAG_25h9);
