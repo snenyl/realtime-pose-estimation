@@ -127,7 +127,10 @@ void ObjectDetection::decode_outputs(const float *prob,
 
   generate_grids_and_stride(input_dimensions_.width , input_dimensions_.height, strides, grid_strides);
   generate_yolox_proposals(grid_strides, prob,  bbox_conf_threshold_, proposals);
-  qsort_descent_inplace(proposals, 0, 0); // TODO(simon) Getting: "Process finished with exit code 139 (interrupted by signal 11: SIGSEGV)"
+
+  if (proposals.size()>0){
+    qsort_descent_inplace(proposals, 0, 0); // TODO(simon) Getting: "Process finished with exit code 139 (interrupted by signal 11: SIGSEGV)"
+  }
 
 
   std::vector<int> picked;

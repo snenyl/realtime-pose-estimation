@@ -61,7 +61,13 @@ void PoseEstimation::setup_pose_estimation() {
     cfg.enable_device_from_file(rosbag_path_);
     p.start(cfg);
 
-  } else p.start();
+  }
+  else if (!load_from_rosbag){
+//    rs2::config cfg;
+//    cfg.enable_device();
+//    p.start(cfg);
+    p.start();
+  }
 
 //  rs2_get_video_stream_intrinsics()
 
