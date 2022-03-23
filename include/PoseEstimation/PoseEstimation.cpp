@@ -191,54 +191,7 @@ void PoseEstimation::edit_pointcloud() {
 
   local_cloud = pcl_points_;
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr merged_cloud (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::PointCloud<pcl::PointXYZ>::Ptr local_cloud_copy (new pcl::PointCloud<pcl::PointXYZ>); // TODO(simon) Only for debugging
-
-  pcl::copyPointCloud(*local_cloud,*local_cloud_copy);
-
-  // TODO(simon) Debug pointcloud start
-  Eigen::Matrix4f rotation_90;
-  Eigen::Matrix4f rotation_180;
-  Eigen::Matrix4f rotation_270;
-  Eigen::Matrix4f rotation_top;
-  Eigen::Matrix4f rotation_bottom;
-
-  rotation_90 <<    0,  0, -1,  0,
-      0,  1,  0,  0,
-      1,  0,  0,  0,
-      0,  0,  0,  1;
-
-  rotation_180 <<   -1,  0,  0,  0,
-      0,  1,  0,  0,
-      0,  0, -1,  0,
-      0,  0,  0,  1;
-
-  rotation_270 <<    0,  0,  1,  0,
-      0,  1,  0,  0,
-      -1,  0,  0,  0,
-      0,  0,  0,  1;
-
-  rotation_top <<   -1,  0,  0,  0,
-      0, -1,  0,  0,
-      0,  0,  1,  0,
-      0,  0,  0,  1;
-
-  rotation_bottom << 1,  0,  0,  0,
-      0,  1,  0,  0,
-      0,  0,  1,  0,
-      0,  0,  0,  1;
-
-//  pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
-  *merged_cloud += *local_cloud_copy;
-  pcl::transformPointCloud (*local_cloud_copy, *local_cloud_copy, rotation_90);
-  *merged_cloud += *local_cloud_copy;
-  pcl::transformPointCloud (*local_cloud_copy, *local_cloud_copy, rotation_180);
-  *merged_cloud += *local_cloud_copy;
-  pcl::transformPointCloud (*local_cloud_copy, *local_cloud_copy, rotation_270);
-  *merged_cloud += *local_cloud_copy;
-//  pcl::transformPointCloud (*local_cloud_copy, *local_cloud_copy, rotation_top);
-//  *merged_cloud += *local_cloud;
-  // TODO(simon) Debug pointcloud end
+//  pcl::PointCloud<pcl::PointXYZ>::Ptr merged_cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
   Eigen::Matrix4f camera_pose;
   Eigen::Matrix4f rotation_red_pos_ccw;
@@ -297,7 +250,7 @@ void PoseEstimation::edit_pointcloud() {
                           std::sin(rot_green_rad), 0, std::cos(rot_green_rad), 0,
                           0,                         0,                          0, 1;
 
-  frustum_filter.setInputCloud(merged_cloud);
+  frustum_filter.setInputCloud(local_cloud);
   frustum_filter.setCameraPose(camera_pose*rotation_red_pos_ccw*rotation_green_pos_cw); //   frustum_filter.setCameraPose(camera_pose*cam2robot*rotation_red_pos_ccw*rotation_green_pos_cw);
   frustum_filter.setNearPlaneDistance(0);
   frustum_filter.setFarPlaneDistance(15);
@@ -305,15 +258,6 @@ void PoseEstimation::edit_pointcloud() {
   frustum_filter.setHorizontalFOV(fov_h_rad_ * 57.2958);
   frustum_filter.filter(*local_pallet);
 
-//  std::cout << "cloud_ptr_ size: " << cloud_ptr_->height * cloud_ptr_->width << std::endl;
-//  std::cout << "local_pallet size: " << local_pallet->height * local_pallet->width << std::endl;
-//  std::cout << "local_pallet size MB: " << sizeof(local_pallet) << std::endl;
-//  std::cout << "cloud_ptr_ size: " << *cloud_ptr_ << std::endl;
-
-//  frustum_filter.setInputCloud(pcl_points_);
-
-//  cloud_pallet_ = local_pallet;
-//    pcl::copyPointCloud(*local_pallet,*cloud_pallet_); // TODO(simon) only to view color
   cloud_pallet_ = local_pallet;
 
   if (std::chrono::system_clock::now() > start_debug_time_){
@@ -339,7 +283,6 @@ void PoseEstimation::view_pointcloud() {
   viewer_->removeAllShapes();
   viewer_->removeAllPointClouds();
   viewer_->removeCoordinateSystem("aruco_marker",0);
-//  viewer_->addPointCloud(pcl_points_); // TODO(simon) v is all and cloud_pallet_ is only pallet
   viewer_->addPointCloud(cloud_pallet_);
 
   if (!rvecs_.empty() && !tvecs_.empty()){
