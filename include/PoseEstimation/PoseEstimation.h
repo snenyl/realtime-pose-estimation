@@ -102,12 +102,16 @@ class PoseEstimation {
     //! Plane_estimation
     std::vector<float> ransac_model_coefficients_;
     pcl::PointXYZ plane_vector_intersect_;
-    double zed_k_matrix_[4] = {529.34,529.05,646.7450,350.3870}; // TODO(simon) Get from camera.
+//    double zed_k_matrix_[4] = {529.34,529.05,646.7450,350.3870}; // TODO(simon) Get from camera. This is from ZED (fx, fy, cx, cy)
+    double zed_k_matrix_[4] = {907.114, 907.605,662.66, 367.428}; // TODO(simon) Get from camera. This is from Realsense l515. (fx, fy, cx, cy)
     std::vector<Eigen::Vector2d> detection_from_image_center_;
     double detection_vector_scale_ = 2;
 
     float fov_v_rad_;
     float fov_h_rad_;
+
+    //! Time
+    std::chrono::time_point<std::chrono::system_clock> start_debug_time_ = std::chrono::system_clock::now();
 
 
 

@@ -20,6 +20,14 @@ void PoseEstimation::run_pose_estimation() {
 //  std::cout << "Height: " << detection_output_struct_.height << std::endl;
 //  std::cout << "Confidence: " << detection_output_struct_.confidence << std::endl;
 
+  if (std::chrono::system_clock::now() > start_debug_time_){
+    std::cout << " X: " << detection_output_struct_.x
+              << " Y: " << detection_output_struct_.y
+              << " Width: " << detection_output_struct_.width
+              << " Height: " << detection_output_struct_.height
+              << " Conf: " << detection_output_struct_.confidence << std::endl;
+  }
+
   calculate_3d_crop();
 
 
@@ -39,17 +47,10 @@ void PoseEstimation::run_pose_estimation() {
   calculate_aruco();
   calculate_pose();
 
-  int iterator;
-  iterator++;
-  if (iterator > 10){ // TODO(simon) Debugging iterator.
-//    std::cout << "hello!" << std::endl;
-    iterator = 0;
-  }
-
-
 
   cv::imshow("Output",cv_image);
   cv::waitKey(33);
+
 
 
 }
@@ -267,7 +268,14 @@ void PoseEstimation::view_pointcloud() {
 //    viewer_->addCoordinateSystem(0.535,tvecs_.at(0)[0], tvecs_.at(0)[1], tvecs_.at(0)[2],"aruco_marker",0);
   }
 
-
+  if (std::chrono::system_clock::now() > start_debug_time_){
+    std::cout << "square_frustum_detection_points_.at(0)" << square_frustum_detection_points_.at(0) << std::endl;
+    std::cout << "square_frustum_detection_points_.at(1)" << square_frustum_detection_points_.at(1) << std::endl;
+    std::cout << "square_frustum_detection_points_.at(2)" << square_frustum_detection_points_.at(2) << std::endl;
+    std::cout << "square_frustum_detection_points_.at(3)" << square_frustum_detection_points_.at(3) << std::endl;
+    start_debug_time_ = std::chrono::system_clock::now();
+    start_debug_time_ += std::chrono::seconds(5);
+  }
 
   if (!square_frustum_detection_points_.empty()){
     viewer_->addLine(pcl::PointXYZ(0,0,0),
@@ -296,8 +304,8 @@ void PoseEstimation::calculate_3d_crop() {
 
   std::vector<Eigen::Vector2d> detection_point_vec(4);
 
-  Eigen::Vector2d image_center(zed_k_matrix_[2],
-                               zed_k_matrix_[3]);
+  Eigen::Vector2d image_center(zed_k_matrix_[2], //TODO(simon) Get K matrix from intel realsense
+                               zed_k_matrix_[3]); //TODO(simon) Get K matrix from intel realsense
 
   detection_point_vec.at(0).x() = detection_output_struct_.x;
   detection_point_vec.at(0).y() = detection_output_struct_.y;
@@ -311,12 +319,23 @@ void PoseEstimation::calculate_3d_crop() {
   detection_point_vec.at(3).x() = detection_output_struct_.x + detection_output_struct_.width;
   detection_point_vec.at(3).y() = detection_output_struct_.y + detection_output_struct_.height;
 
+  detection_from_image_center_.clear();
+  square_frustum_detection_points_.clear();
   for (int i = 0; i < 4; ++i) {
-    detection_from_image_center_.emplace_back((detection_point_vec.at(i) - image_center) / zed_k_matrix_[0]);
-    detection_from_image_center_.at(i).y() *= -1; // TODO(simon) This is a hack to invert the y-axis.
+    detection_from_image_center_.emplace_back((detection_point_vec.at(i) - image_center) / zed_k_matrix_[0]); //TODO(simon) Get K matrix from intel realsense; The difference bwetween this is too spall
+//    detection_from_image_center_.at(i).y() *= -1; // TODO(simon) This is a hack to invert the y-axis.
     square_frustum_detection_points_.emplace_back(detection_from_image_center_.at(i).x()*detection_vector_scale_,
                                                   detection_from_image_center_.at(i).y()*detection_vector_scale_,
-                                                  -1*detection_vector_scale_);
+                                                  detection_vector_scale_);
+  }
+
+  if (std::chrono::system_clock::now() > start_debug_time_){
+    for (int i = 0; i < 4; ++i) {
+      std::cout << "image_center X: " << image_center << std::endl;
+      std::cout << "detection_point_vec.at(i): " << detection_point_vec.at(i) << std::endl;
+      std::cout << "zed_k_matrix_[0] " << zed_k_matrix_[0] << std::endl;
+      std::cout << "detection_from_image_center_: " << detection_from_image_center_.at(i) << std::endl;
+    }
   }
 
 
@@ -352,11 +371,7 @@ void PoseEstimation::calculate_3d_crop() {
 
   Eigen::Vector3f vector_camera_front(1,0,0);
 
-//  std::cout << "Vector 0: " << vector_0 << std::endl;
-//  std::cout << "Vector 1: " << vector_1 << std::endl;
-//  std::cout << "Vector 2: " << vector_2 << std::endl;
-//  std::cout << "Vector 3: " << vector_3 << std::endl;
-//  std::cout << "vector_center: " << vector_center << std::endl;
+
 
   float dot_01 = vector_0.dot(vector_1);
   float dot_02 = vector_0.dot(vector_2);
@@ -373,5 +388,22 @@ void PoseEstimation::calculate_3d_crop() {
 
   fov_h_rad_ = angle_01;
   fov_v_rad_ = angle_02;
+
+//  std::cout << "Vector 0: " << vector_0 << std::endl;
+//  std::cout << "Vector 1: " << vector_1 << std::endl;
+//  std::cout << "Vector 2: " << vector_2 << std::endl;
+//  std::cout << "Vector 3: " << vector_3 << std::endl;
+//  std::cout << "vector_center: " << vector_center << std::endl;
+
+  if (std::chrono::system_clock::now() > start_debug_time_){
+    std::cout << "detection_point_vec_0: " << detection_point_vec.at(0).x() << " " << detection_point_vec.at(0).y() << std::endl;
+    std::cout << "detection_point_vec_1: " << detection_point_vec.at(1).x() << " " << detection_point_vec.at(1).y() << std::endl;
+    std::cout << "detection_point_vec_2: " << detection_point_vec.at(2).x() << " " << detection_point_vec.at(2).y() << std::endl;
+    std::cout << "detection_point_vec_3: " << detection_point_vec.at(3).x() << " " << detection_point_vec.at(3).y() << std::endl;
+  }
+
+
+
+//  cv::waitKey(0);
 
 }
