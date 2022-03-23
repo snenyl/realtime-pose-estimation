@@ -316,6 +316,7 @@ void ObjectDetection::draw_objects(const cv::Mat &bgr, const std::vector<Object>
       "pallet"
   };
 
+  detection_output_struct_.clear();
   detection_output_struct_.resize(objects.size());
 
   for (size_t i = 0; i < objects.size(); i++)
@@ -370,12 +371,17 @@ void ObjectDetection::draw_objects(const cv::Mat &bgr, const std::vector<Object>
 object_detection_output ObjectDetection::get_detection() {
 
   double max_confidence = 0;
+  double max_areal = 0;
   int iterator_max_confidence = 0;
 
-  if (detection_output_struct_.empty()){
+  if (!detection_output_struct_.empty()){
     for (int i = 0; i < detection_output_struct_.size(); ++i) {
-      if (detection_output_struct_.at(i).confidence > max_confidence){
-        max_confidence = detection_output_struct_.at(i).confidence;
+//      if (detection_output_struct_.at(i).confidence > max_confidence){
+//        max_confidence = detection_output_struct_.at(i).confidence; // TODO(simon) Select for max confidence
+//        iterator_max_confidence = i;
+//      }
+      if (detection_output_struct_.at(i).width * detection_output_struct_.at(i).height > max_areal){
+        max_areal = detection_output_struct_.at(i).width * detection_output_struct_.at(i).height; // TODO(simon) Select for largest size
         iterator_max_confidence = i;
       }
     }
@@ -385,6 +391,8 @@ object_detection_output ObjectDetection::get_detection() {
     return detection_output_struct_.at(iterator_max_confidence);
   }
   object_detection_output non_detect{1,1,1,1,1.0};
+
+
   return non_detect;
 }
 

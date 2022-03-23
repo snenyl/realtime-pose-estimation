@@ -87,6 +87,10 @@ class ObjectDetection {
 
   std::vector<object_detection_output> detection_output_struct_;
 
+  //! Time
+//  std::chrono::time_point<std::chrono::system_clock> start_debug_time_ = std::chrono::system_clock::now();
+
+
 };
 
 #endif //REALTIME_POSE_ESTIMATION_INCLUDE_OBJECTDETECTION_OBJECTDETECTION_H_

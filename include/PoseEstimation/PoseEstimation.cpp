@@ -14,12 +14,6 @@ void PoseEstimation::run_pose_estimation() {
 
   detection_output_struct_ = object_detection_object_.get_detection();
 
-//  std::cout << "X: " << detection_output_struct_.x << std::endl;
-//  std::cout << "Y: " << detection_output_struct_.y << std::endl;
-//  std::cout << "Width: " << detection_output_struct_.width << std::endl;
-//  std::cout << "Height: " << detection_output_struct_.height << std::endl;
-//  std::cout << "Confidence: " << detection_output_struct_.confidence << std::endl;
-
   if (std::chrono::system_clock::now() > start_debug_time_){
     std::cout << " X: " << detection_output_struct_.x
               << " Y: " << detection_output_struct_.y
@@ -30,8 +24,7 @@ void PoseEstimation::run_pose_estimation() {
 
   calculate_3d_crop();
 
-
-//  edit_pointcloud();
+  edit_pointcloud();
   view_pointcloud();
 
 
@@ -55,8 +48,9 @@ void PoseEstimation::run_pose_estimation() {
 
 }
 void PoseEstimation::setup_pose_estimation() {
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_151307.bag";
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_151307.bag";
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_153225.bag"; // new
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 
   if (load_from_rosbag){
@@ -185,7 +179,14 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr PoseEstimation::points_to_pcl(const rs2::poi
   return cloud;
 }
 void PoseEstimation::edit_pointcloud() {
+
   pcl::FrustumCulling<pcl::PointXYZ> frustum_filter;
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr local_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr local_pallet(new pcl::PointCloud<pcl::PointXYZ>);
+
+  local_cloud = pcl_points_;
+
 //  pcl::PointCloud<pcl::PointXYZ>::Ptr local_pallet(new pcl::PointCloud<pcl::PointXYZ>);
 
   Eigen::Matrix4f camera_pose;
@@ -193,15 +194,22 @@ void PoseEstimation::edit_pointcloud() {
   Eigen::Matrix4f rotation_green_pos_cw;
   Eigen::Matrix4f cam2robot;
 
-  cam2robot <<   0, 0, 1, 0,
-                 0,-1, 0, 0,
-                 1, 0, 0, 0,
-                 0, 0, 0, 1;
+  cam2robot   <<  0, 0, 1, 0,
+                  0,-1, 0, 0,
+                  1, 0, 0, 0,
+                  0, 0, 0, 1;
 
   camera_pose << -1, 0,  0, 0,
                   0, 1,  0, 0,
                   0, 0, -1, 0,
                   0, 0,  0, 1;
+
+  if (std::chrono::system_clock::now() > start_debug_time_){
+    std::cout << "\n ROTATION: \n " <<  std::endl;
+
+    std::cout << center_frustum_ << std::endl;
+
+  }
 
   float rot_red_rad = 0.35;
   float rot_green_rad = -0.10;
@@ -216,21 +224,30 @@ void PoseEstimation::edit_pointcloud() {
                           std::sin(rot_green_rad), 0, std::cos(rot_green_rad), 0,
                           0,                         0,                          0, 1;
 
-  frustum_filter.setInputCloud(cloud_ptr_);
+  frustum_filter.setInputCloud(local_cloud);
   frustum_filter.setCameraPose(camera_pose*cam2robot*rotation_red_pos_ccw*rotation_green_pos_cw);
   frustum_filter.setNearPlaneDistance(0);
   frustum_filter.setFarPlaneDistance(15);
   frustum_filter.setVerticalFOV(fov_v_rad_ * 57.2958);
   frustum_filter.setHorizontalFOV(fov_h_rad_ * 57.2958);
-//  frustum_filter.filter(*local_pallet);
+  frustum_filter.filter(*local_pallet);
 
-
-  std::cout << "cloud_ptr_ size: " << cloud_ptr_->height * cloud_ptr_->width << std::endl;
+//  std::cout << "cloud_ptr_ size: " << cloud_ptr_->height * cloud_ptr_->width << std::endl;
 //  std::cout << "local_pallet size: " << local_pallet->height * local_pallet->width << std::endl;
 //  std::cout << "local_pallet size MB: " << sizeof(local_pallet) << std::endl;
-  std::cout << "cloud_ptr_ size: " << *cloud_ptr_ << std::endl;
+//  std::cout << "cloud_ptr_ size: " << *cloud_ptr_ << std::endl;
 
-  frustum_filter.setInputCloud(pcl_points_);
+//  frustum_filter.setInputCloud(pcl_points_);
+
+  cloud_pallet_ = local_pallet;
+
+  if (std::chrono::system_clock::now() > start_debug_time_){
+    std::cout << "local_pallet->size() " <<  local_pallet->size() << std::endl;
+    std::cout << "cloud_pallet_->size() " <<  cloud_pallet_->size() << std::endl;
+    std::cout << "local_cloud->size() " <<  local_cloud->size() << std::endl;
+  }
+
+
 
 
 }
@@ -247,7 +264,7 @@ void PoseEstimation::view_pointcloud() {
   viewer_->removeAllShapes();
   viewer_->removeAllPointClouds();
   viewer_->removeCoordinateSystem("aruco_marker",0);
-  viewer_->addPointCloud(pcl_points_);
+  viewer_->addPointCloud(pcl_points_); // TODO(simon) v is all and cloud_pallet_ is only pallet
 
   if (!rvecs_.empty() && !tvecs_.empty()){
 //    std::cout << "RVECS: " << rvecs_.at(0) << std::endl;
