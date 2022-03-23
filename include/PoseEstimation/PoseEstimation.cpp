@@ -25,6 +25,8 @@ void PoseEstimation::run_pose_estimation() {
   calculate_3d_crop();
 
   edit_pointcloud();
+//  calculate_ransac();
+
   view_pointcloud();
 
 
@@ -50,8 +52,8 @@ void PoseEstimation::run_pose_estimation() {
 void PoseEstimation::setup_pose_estimation() {
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_151307.bag";
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_153225.bag"; // new
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 
   if (load_from_rosbag){
@@ -212,13 +214,13 @@ void PoseEstimation::edit_pointcloud() {
   double angle_zy = std::acos((z_inverse.dot(center_frustum_zy))/(z_inverse.norm()*center_frustum_zy.norm()));
   double angle_zx = std::acos((z_inverse.dot(center_frustum_zx))/(z_inverse.norm()*center_frustum_zx.norm()));
 
-  std::cout << "angle_zy: " << angle_zy << std::endl;
-  std::cout << "angle_zx: " << angle_zx << std::endl;
-  std::cout << "center_frustum_zy: " << center_frustum_zy.x() << " " << center_frustum_zy.y() << std::endl;
-  std::cout << "center_frustum_zx: " << center_frustum_zx.x() << " " << center_frustum_zx.y() << std::endl;
 
   if (std::chrono::system_clock::now() > start_debug_time_){
     std::cout << "\n ROTATION: \n " <<  std::endl;
+    std::cout << "angle_zy: " << angle_zy << std::endl;
+    std::cout << "angle_zx: " << angle_zx << std::endl;
+    std::cout << "center_frustum_zy: " << center_frustum_zy.x() << " " << center_frustum_zy.y() << std::endl;
+    std::cout << "center_frustum_zx: " << center_frustum_zx.x() << " " << center_frustum_zx.y() << std::endl;
 
     std::cout << center_frustum_ << std::endl;
 
@@ -331,8 +333,6 @@ void PoseEstimation::view_pointcloud() {
                      "line_center",0);
   }
 
-
-
   viewer_->spinOnce(100);
 
 }
@@ -442,4 +442,32 @@ void PoseEstimation::calculate_3d_crop() {
 
 //  cv::waitKey(0);
 
+}
+void PoseEstimation::calculate_ransac() {
+  std::vector<int> inliers;
+
+  pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ>::Ptr
+      model_p (new pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ> (cloud_pallet_));
+
+  model_p->setAxis(Eigen::Vector3f(0.0,0.0,1.0));
+  model_p->setEpsAngle(0.5);
+
+  pcl::RandomSampleConsensus<pcl::PointXYZ> ransac (model_p);
+  ransac.setDistanceThreshold (.01);
+  ransac.computeModel();
+  ransac.getInliers(inliers);
+
+//  std::cout << "Inliers: " << inliers.size() << std::endl;
+
+  double a = ransac.model_coefficients_[0]/ransac.model_coefficients_[3];
+  double b = ransac.model_coefficients_[1]/ransac.model_coefficients_[3];
+  double c = ransac.model_coefficients_[2]/ransac.model_coefficients_[3];
+
+//  std::cout << "Model: "<< a << "X+"<< b << "Y+"<< c << "Z" << std::endl;
+
+  pcl::copyPointCloud (*cloud_ptr_, inliers, *cloud_ptr_);
+
+  for (int i = 0; i < 4; ++i) {
+    ransac_model_coefficients_.push_back(ransac.model_coefficients_[i]);
+  }
 }

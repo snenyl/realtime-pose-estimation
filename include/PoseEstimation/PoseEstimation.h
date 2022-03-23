@@ -13,8 +13,7 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/point_types.h>
-//#include <pcl/sample_consensus/ransac.h>
-//#include <pcl/sample_consensus/sac_model_plane.h>
+#include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_perpendicular_plane.h>
 #include <pcl/conversions.h>
 #include <pcl/ModelCoefficients.h>
@@ -50,7 +49,7 @@ class PoseEstimation {
   void set_3d_aruco_a();
   void view_pointcloud();
 
-  bool load_from_rosbag = true; //! Select if input should be recorder rosbag or direct from camera.
+  bool load_from_rosbag = false; //! Select if input should be recorder rosbag or direct from camera.
 
 
   //! Camera
