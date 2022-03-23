@@ -48,9 +48,10 @@ void PoseEstimation::run_pose_estimation() {
 
 }
 void PoseEstimation::setup_pose_estimation() {
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_151307.bag";
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_151307.bag";
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_153225.bag"; // new
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 
   if (load_from_rosbag){
