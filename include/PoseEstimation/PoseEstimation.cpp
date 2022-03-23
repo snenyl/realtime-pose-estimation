@@ -50,8 +50,8 @@ void PoseEstimation::run_pose_estimation() {
 void PoseEstimation::setup_pose_estimation() {
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_151307.bag";
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_153225.bag"; // new
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 
   if (load_from_rosbag){
@@ -63,9 +63,6 @@ void PoseEstimation::setup_pose_estimation() {
 
   }
   else if (!load_from_rosbag){
-//    rs2::config cfg;
-//    cfg.enable_device();
-//    p.start(cfg);
     p.start();
   }
 
@@ -194,32 +191,101 @@ void PoseEstimation::edit_pointcloud() {
 
   local_cloud = pcl_points_;
 
-//  pcl::PointCloud<pcl::PointXYZ>::Ptr local_pallet(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr merged_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr local_cloud_copy (new pcl::PointCloud<pcl::PointXYZ>); // TODO(simon) Only for debugging
+
+  pcl::copyPointCloud(*local_cloud,*local_cloud_copy);
+
+  // TODO(simon) Debug pointcloud start
+  Eigen::Matrix4f rotation_90;
+  Eigen::Matrix4f rotation_180;
+  Eigen::Matrix4f rotation_270;
+  Eigen::Matrix4f rotation_top;
+  Eigen::Matrix4f rotation_bottom;
+
+  rotation_90 <<    0,  0, -1,  0,
+      0,  1,  0,  0,
+      1,  0,  0,  0,
+      0,  0,  0,  1;
+
+  rotation_180 <<   -1,  0,  0,  0,
+      0,  1,  0,  0,
+      0,  0, -1,  0,
+      0,  0,  0,  1;
+
+  rotation_270 <<    0,  0,  1,  0,
+      0,  1,  0,  0,
+      -1,  0,  0,  0,
+      0,  0,  0,  1;
+
+  rotation_top <<   -1,  0,  0,  0,
+      0, -1,  0,  0,
+      0,  0,  1,  0,
+      0,  0,  0,  1;
+
+  rotation_bottom << 1,  0,  0,  0,
+      0,  1,  0,  0,
+      0,  0,  1,  0,
+      0,  0,  0,  1;
+
+//  pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud (new pcl::PointCloud<pcl::PointXYZ> ());
+  *merged_cloud += *local_cloud_copy;
+  pcl::transformPointCloud (*local_cloud_copy, *local_cloud_copy, rotation_90);
+  *merged_cloud += *local_cloud_copy;
+  pcl::transformPointCloud (*local_cloud_copy, *local_cloud_copy, rotation_180);
+  *merged_cloud += *local_cloud_copy;
+  pcl::transformPointCloud (*local_cloud_copy, *local_cloud_copy, rotation_270);
+  *merged_cloud += *local_cloud_copy;
+//  pcl::transformPointCloud (*local_cloud_copy, *local_cloud_copy, rotation_top);
+//  *merged_cloud += *local_cloud;
+  // TODO(simon) Debug pointcloud end
 
   Eigen::Matrix4f camera_pose;
   Eigen::Matrix4f rotation_red_pos_ccw;
   Eigen::Matrix4f rotation_green_pos_cw;
-  Eigen::Matrix4f cam2robot;
 
-  cam2robot   <<  0, 0, 1, 0,
-                  0,-1, 0, 0,
-                  1, 0, 0, 0,
-                  0, 0, 0, 1;
-
-  camera_pose << -1, 0,  0, 0,
+  camera_pose <<  0, 0, -1, 0,
                   0, 1,  0, 0,
-                  0, 0, -1, 0,
+                  1, 0,  0, 0,
                   0, 0,  0, 1;
+
+
+  Eigen::Vector2d z_inverse;
+  z_inverse << 1,0;
+  Eigen::Vector2d center_frustum_zy;
+  Eigen::Vector2d center_frustum_zx;
+  center_frustum_zy << center_frustum_.z,center_frustum_.y;
+  center_frustum_zx << center_frustum_.z,center_frustum_.x;
+  double angle_zy = std::acos((z_inverse.dot(center_frustum_zy))/(z_inverse.norm()*center_frustum_zy.norm()));
+  double angle_zx = std::acos((z_inverse.dot(center_frustum_zx))/(z_inverse.norm()*center_frustum_zx.norm()));
+
+  std::cout << "angle_zy: " << angle_zy << std::endl;
+  std::cout << "angle_zx: " << angle_zx << std::endl;
+  std::cout << "center_frustum_zy: " << center_frustum_zy.x() << " " << center_frustum_zy.y() << std::endl;
+  std::cout << "center_frustum_zx: " << center_frustum_zx.x() << " " << center_frustum_zx.y() << std::endl;
 
   if (std::chrono::system_clock::now() > start_debug_time_){
     std::cout << "\n ROTATION: \n " <<  std::endl;
 
     std::cout << center_frustum_ << std::endl;
 
+    std::cout << "z_inverse.dot(center_frustum_zy): " << z_inverse.dot(center_frustum_zy) << std::endl;
+    std::cout << "z_inverse: " << z_inverse << std::endl;
+    std::cout << "center_frustum_zy: " << center_frustum_zy << std::endl;
+    std::cout << "angle_zy: " << angle_zy << std::endl;
+    std::cout << "angle_zx: " << angle_zx << std::endl;
+
   }
 
-  float rot_red_rad = 0.35;
-  float rot_green_rad = -0.10;
+  if (center_frustum_zx.y()>0){ // TODO(simon) This is a hack. Solve the problem not the symptom.
+    angle_zx *= -1;
+  }
+  if (center_frustum_zy.y()<0){ // TODO(simon) This is a hack. Solve the problem not the symptom.
+    angle_zy *= -1;
+  }
+
+  float rot_red_rad = angle_zy;
+  float rot_green_rad = angle_zx;
 
   rotation_red_pos_ccw << std::cos(rot_red_rad),-std::sin(rot_red_rad), 0,0,
                           std::sin(rot_red_rad), std::cos(rot_red_rad), 0,0,
@@ -231,8 +297,8 @@ void PoseEstimation::edit_pointcloud() {
                           std::sin(rot_green_rad), 0, std::cos(rot_green_rad), 0,
                           0,                         0,                          0, 1;
 
-  frustum_filter.setInputCloud(local_cloud);
-  frustum_filter.setCameraPose(camera_pose*cam2robot*rotation_red_pos_ccw*rotation_green_pos_cw);
+  frustum_filter.setInputCloud(merged_cloud);
+  frustum_filter.setCameraPose(camera_pose*rotation_red_pos_ccw*rotation_green_pos_cw); //   frustum_filter.setCameraPose(camera_pose*cam2robot*rotation_red_pos_ccw*rotation_green_pos_cw);
   frustum_filter.setNearPlaneDistance(0);
   frustum_filter.setFarPlaneDistance(15);
   frustum_filter.setVerticalFOV(fov_v_rad_ * 57.2958);
@@ -246,6 +312,8 @@ void PoseEstimation::edit_pointcloud() {
 
 //  frustum_filter.setInputCloud(pcl_points_);
 
+//  cloud_pallet_ = local_pallet;
+//    pcl::copyPointCloud(*local_pallet,*cloud_pallet_); // TODO(simon) only to view color
   cloud_pallet_ = local_pallet;
 
   if (std::chrono::system_clock::now() > start_debug_time_){
@@ -271,7 +339,8 @@ void PoseEstimation::view_pointcloud() {
   viewer_->removeAllShapes();
   viewer_->removeAllPointClouds();
   viewer_->removeCoordinateSystem("aruco_marker",0);
-  viewer_->addPointCloud(pcl_points_); // TODO(simon) v is all and cloud_pallet_ is only pallet
+//  viewer_->addPointCloud(pcl_points_); // TODO(simon) v is all and cloud_pallet_ is only pallet
+  viewer_->addPointCloud(cloud_pallet_);
 
   if (!rvecs_.empty() && !tvecs_.empty()){
 //    std::cout << "RVECS: " << rvecs_.at(0) << std::endl;

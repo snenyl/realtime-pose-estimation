@@ -50,7 +50,7 @@ class PoseEstimation {
   void set_3d_aruco_a();
   void view_pointcloud();
 
-  bool load_from_rosbag = false; //! Select if input should be recorder rosbag or direct from camera.
+  bool load_from_rosbag = true; //! Select if input should be recorder rosbag or direct from camera.
 
 
   //! Camera
