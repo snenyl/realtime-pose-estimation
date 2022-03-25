@@ -25,7 +25,9 @@ void PoseEstimation::run_pose_estimation() {
   calculate_3d_crop();
 
   edit_pointcloud();
-//  calculate_ransac();
+  if (detection_output_struct_.width > 10 && detection_output_struct_.height > 10){
+    calculate_ransac();
+  }
 
   view_pointcloud();
 
@@ -445,12 +447,13 @@ void PoseEstimation::calculate_3d_crop() {
 }
 void PoseEstimation::calculate_ransac() {
   std::vector<int> inliers;
+  ransac_model_coefficients_.clear();
 
   pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ>::Ptr
       model_p (new pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ> (cloud_pallet_));
 
-  model_p->setAxis(Eigen::Vector3f(0.0,0.0,1.0));
-  model_p->setEpsAngle(0.5);
+  model_p->setAxis(Eigen::Vector3f(0.0,1.0,0.0)); // TODO(simon) ZED: (0.0,0.0,1.0) Realsense: (0.0,1.0,0.0)
+  model_p->setEpsAngle(1); // TODO(simon) Default 0.5
 
   pcl::RandomSampleConsensus<pcl::PointXYZ> ransac (model_p);
   ransac.setDistanceThreshold (.01);
@@ -465,9 +468,11 @@ void PoseEstimation::calculate_ransac() {
 
 //  std::cout << "Model: "<< a << "X+"<< b << "Y+"<< c << "Z" << std::endl;
 
-  pcl::copyPointCloud (*cloud_ptr_, inliers, *cloud_ptr_);
+//  pcl::copyPointCloud (*cloud_ptr_, inliers, *cloud_ptr_);
 
   for (int i = 0; i < 4; ++i) {
     ransac_model_coefficients_.push_back(ransac.model_coefficients_[i]);
   }
+
+
 }
