@@ -32,11 +32,11 @@ void PoseEstimation::run_pose_estimation() {
 
   calculate_ransac(); //Debugging
 
-  if (detection_output_struct_.width > 10  &&
-      detection_output_struct_.height > 10 &&
-      cloud_pallet_->size() > 170000){
-    calculate_ransac();
-  }
+//  if (detection_output_struct_.width > 10  &&
+//      detection_output_struct_.height > 10 &&
+//      cloud_pallet_->size() > 170000){
+//    calculate_ransac();
+//  }
 
   view_pointcloud();
 
@@ -76,8 +76,8 @@ void PoseEstimation::setup_pose_estimation() {
 
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_151307.bag";
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_153225.bag"; // new
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_1903202/**/2/20220319_112640.bag"; //Standstill front
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_19032022/20220319_113007.bag"; //Standstill front
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
@@ -286,6 +286,8 @@ void PoseEstimation::edit_pointcloud() {
   frustum_filter.setHorizontalFOV(fov_h_rad_ * 57.2958);
   frustum_filter.filter(*local_pallet);
 
+  frustum_filter_inliers_ = frustum_filter.getIndices();
+
   cloud_pallet_ = local_pallet;
 
   if (std::chrono::system_clock::now() > start_debug_time_){
@@ -317,7 +319,29 @@ void PoseEstimation::view_pointcloud() {
 
   pcl::copyPointCloud(*pcl_points_,*final_cloud_view);
 
-  viewer_->addPointCloud(pcl_points_);
+  for (int i = 0; i < final_cloud_view->points.size(); ++i) {
+    final_cloud_view->points[i].r = 255;
+    final_cloud_view->points[i].g = 255;
+    final_cloud_view->points[i].b = 255;
+  }
+
+
+  std::cout << frustum_filter_inliers_->size() << std::endl;
+//  for (int i = 0; i < frustum_filter_inliers_->size(); ++i) {
+//    final_cloud_view->points[frustum_filter_inliers_[i]].b=0;
+//  }
+
+  for (int i = 0; i < inliers_.size(); ++i) {
+    final_cloud_view->points[inliers_[i]].g = 0;
+    final_cloud_view->points[inliers_[i]].b = 0;
+  }
+
+
+
+
+
+
+  viewer_->addPointCloud(final_cloud_view);
 
   if (!rvecs_.empty() && !tvecs_.empty()){
     Eigen::Affine3f rotation;
@@ -510,7 +534,7 @@ void PoseEstimation::calculate_ransac() {
       model_p (new pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ> (pcl_points_));
 
   model_p->setAxis(Eigen::Vector3f(0.0,0.0,1.0)); // TODO(simon) ZED: (0.0,0.0,1.0) Realsense: (0.0,1.0,0.0)
-  model_p->setEpsAngle(0.785398); // TODO(simon) Default 0.5
+  model_p->setEpsAngle(0.5); // TODO(simon) Default 0.5
 
   pcl::RandomSampleConsensus<pcl::PointXYZ> ransac (model_p);
   ransac.setDistanceThreshold (0.01); // TODO(simon) Default 0.01

@@ -51,7 +51,7 @@ class PoseEstimation {
   void set_3d_aruco_a();
   void view_pointcloud();
 
-  bool load_from_rosbag = false; //! Select if input should be recorder rosbag or direct from camera.
+  bool load_from_rosbag = true; //! Select if input should be recorder rosbag or direct from camera.
 
 
   //! Camera
@@ -104,6 +104,7 @@ class PoseEstimation {
     //! Plane_estimation
     std::vector<float> ransac_model_coefficients_;
     std::vector<int> inliers_;
+    boost::shared_ptr<std::vector<int>> frustum_filter_inliers_;
     pcl::PointXYZ plane_vector_intersect_;
 //    double zed_k_matrix_[4] = {529.34,529.05,646.7450,350.3870}; // TODO(simon) Get from camera. This is from ZED (fx, fy, cx, cy)
     double zed_k_matrix_[4] = {907.114, 907.605,662.66, 367.428}; // TODO(simon) Get from camera. This is from Realsense l515. (fx, fy, cx, cy)
