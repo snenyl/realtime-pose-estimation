@@ -93,7 +93,6 @@ class PoseEstimation {
     boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> pcl_points_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_pallet_;
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr final_cloud_view_;
     pcl::visualization::PCLVisualizer::Ptr viewer_;
 
     std::vector<pcl::PointXYZ> square_frustum_detection_points_;
@@ -104,6 +103,7 @@ class PoseEstimation {
 
     //! Plane_estimation
     std::vector<float> ransac_model_coefficients_;
+    std::vector<int> inliers_;
     pcl::PointXYZ plane_vector_intersect_;
 //    double zed_k_matrix_[4] = {529.34,529.05,646.7450,350.3870}; // TODO(simon) Get from camera. This is from ZED (fx, fy, cx, cy)
     double zed_k_matrix_[4] = {907.114, 907.605,662.66, 367.428}; // TODO(simon) Get from camera. This is from Realsense l515. (fx, fy, cx, cy)

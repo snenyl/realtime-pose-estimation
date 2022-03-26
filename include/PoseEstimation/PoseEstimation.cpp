@@ -308,13 +308,14 @@ void PoseEstimation::view_pointcloud() {
     first_run_ = false;
   }
 
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr final_cloud_view(new pcl::PointCloud<pcl::PointXYZRGB>);
 
-//  final_cloud_view_->clear();
+  final_cloud_view->clear();
   viewer_->removeAllShapes();
   viewer_->removeAllPointClouds();
   viewer_->removeCoordinateSystem("aruco_marker",0);
 
-//  pcl::copyPointCloud(*pcl_points_,*final_cloud_view_);
+  pcl::copyPointCloud(*pcl_points_,*final_cloud_view);
 
   viewer_->addPointCloud(pcl_points_);
 
@@ -503,6 +504,7 @@ void PoseEstimation::calculate_3d_crop() {
 }
 void PoseEstimation::calculate_ransac() {
   std::vector<int> inliers;
+  inliers_.clear();
 
   pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ>::Ptr
       model_p (new pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ> (pcl_points_));
@@ -514,10 +516,6 @@ void PoseEstimation::calculate_ransac() {
   ransac.setDistanceThreshold (0.01); // TODO(simon) Default 0.01
   ransac.computeModel();
   ransac.getInliers(inliers);
-
-
-
-
 
 
   if (std::chrono::system_clock::now() > start_debug_time_){
@@ -542,6 +540,7 @@ void PoseEstimation::calculate_ransac() {
 
 
 
+  inliers_ = inliers;
 }
 
 Eigen::Affine3f PoseEstimation::create_rotation_matrix(float ax, float ay, float az) {
