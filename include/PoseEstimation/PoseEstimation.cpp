@@ -25,7 +25,16 @@ void PoseEstimation::run_pose_estimation() {
   calculate_3d_crop();
 
   edit_pointcloud();
-  if (detection_output_struct_.width > 10 && detection_output_struct_.height > 10){
+
+  if (std::chrono::system_clock::now() > start_debug_time_){
+    std::cout << "cloud_pallet_->size(): " << cloud_pallet_->size() << std::endl;
+  }
+
+  calculate_ransac(); //Debugging
+
+  if (detection_output_struct_.width > 10  &&
+      detection_output_struct_.height > 10 &&
+      cloud_pallet_->size() > 170000){
     calculate_ransac();
   }
 
@@ -48,14 +57,29 @@ void PoseEstimation::run_pose_estimation() {
   cv::imshow("Output",cv_image);
   cv::waitKey(33);
 
-
+  ransac_model_coefficients_.clear();
 
 }
 void PoseEstimation::setup_pose_estimation() {
+//  std::string config_path = std::filesystem::current_path().parent_path() / "config/realtime_pose_estimation_config.json";
+//  std::ofstream config_file;
+//  config_file.open(config_path);
+//
+//  while (config_file.is_open()){
+//
+//    std::cout << config_file.rdbuf() << std::endl;
+//
+//    config_file.close();
+//  }
+//
+//  std::cout << "config_path: " << config_path << std::endl;
+
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_151307.bag";
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_153225.bag"; // new
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
   rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_1903202/**/2/20220319_112640.bag"; //Standstill front
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_19032022/20220319_113007.bag"; //Standstill front
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 
   if (load_from_rosbag){
@@ -284,19 +308,44 @@ void PoseEstimation::view_pointcloud() {
     first_run_ = false;
   }
 
+
+//  final_cloud_view_->clear();
   viewer_->removeAllShapes();
   viewer_->removeAllPointClouds();
   viewer_->removeCoordinateSystem("aruco_marker",0);
-  viewer_->addPointCloud(cloud_pallet_);
+
+//  pcl::copyPointCloud(*pcl_points_,*final_cloud_view_);
+
+  viewer_->addPointCloud(pcl_points_);
 
   if (!rvecs_.empty() && !tvecs_.empty()){
+    Eigen::Affine3f rotation;
 //    std::cout << "RVECS: " << rvecs_.at(0) << std::endl;
 //    std::cout << "TVECS: " << tvecs_.at(0) << std::endl;
 //    viewer_->addCoordinateSystem(0.535,0.128196, 0.0394752, 0.815717,"aruco_marker",0);
+    rot_trans_matrix_.matrix() << 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;
+    rotation.matrix() << 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;
+
 
     rot_trans_matrix_.translation()[0] = static_cast<float>(tvecs_.at(0)[0]);
     rot_trans_matrix_.translation()[1] = static_cast<float>(tvecs_.at(0)[1]);
     rot_trans_matrix_.translation()[2] = static_cast<float>(tvecs_.at(0)[2]);
+
+
+    rotation = create_rotation_matrix(rvecs_.at(0)[0],
+                                      rvecs_.at(0)[1],
+                                      rvecs_.at(0)[2]);
+
+//    std::cout << "\n A: " << rot_trans_matrix_.matrix() << "\n" << std::endl;
+//    std::cout << "\n B: " << rotation.matrix() << "\n" << std::endl;
+
+    rot_trans_matrix_.matrix() += rotation.matrix();
+
+//    std::cout << "\n" << rot_trans_matrix_.matrix() << "\n" << std::endl;
+
+
+
+
 
 //    rot_trans_matrix_.linear() = ( Eigen::AngleAxisd(3.1415 / 6, Eigen::Vector3d::UnitY()) *
 //                                   Eigen::AngleAxisd(3.1415 / 6, Eigen::Vector3d::UnitX()) ).toRotationMatrix();
@@ -334,6 +383,13 @@ void PoseEstimation::view_pointcloud() {
                      center_frustum_,255,0,0,
                      "line_center",0);
   }
+
+  if (ransac_model_coefficients_.size() > 2){
+    pcl::ModelCoefficients coff;
+    coff.values = ransac_model_coefficients_;
+    viewer_->addPlane(coff,0.0,0.0,0.0,"plane",0);
+  }
+
 
   viewer_->spinOnce(100);
 
@@ -447,27 +503,37 @@ void PoseEstimation::calculate_3d_crop() {
 }
 void PoseEstimation::calculate_ransac() {
   std::vector<int> inliers;
-  ransac_model_coefficients_.clear();
 
   pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ>::Ptr
-      model_p (new pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ> (cloud_pallet_));
+      model_p (new pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ> (pcl_points_));
 
-  model_p->setAxis(Eigen::Vector3f(0.0,1.0,0.0)); // TODO(simon) ZED: (0.0,0.0,1.0) Realsense: (0.0,1.0,0.0)
-  model_p->setEpsAngle(1); // TODO(simon) Default 0.5
+  model_p->setAxis(Eigen::Vector3f(0.0,0.0,1.0)); // TODO(simon) ZED: (0.0,0.0,1.0) Realsense: (0.0,1.0,0.0)
+  model_p->setEpsAngle(0.785398); // TODO(simon) Default 0.5
 
   pcl::RandomSampleConsensus<pcl::PointXYZ> ransac (model_p);
-  ransac.setDistanceThreshold (.01);
+  ransac.setDistanceThreshold (0.01); // TODO(simon) Default 0.01
   ransac.computeModel();
   ransac.getInliers(inliers);
 
-//  std::cout << "Inliers: " << inliers.size() << std::endl;
+
+
+
+
+
+  if (std::chrono::system_clock::now() > start_debug_time_){
+    std::cout << "inlines: " << inliers.size() << std::endl;
+    std::cout << "ransac.model_coefficients_: " << ransac.model_coefficients_[0] << " "
+              << ransac.model_coefficients_[1] << " " << ransac.model_coefficients_[2] << " "
+              << ransac.model_coefficients_[3] << std::endl;
+  }
+
 
   double a = ransac.model_coefficients_[0]/ransac.model_coefficients_[3];
   double b = ransac.model_coefficients_[1]/ransac.model_coefficients_[3];
   double c = ransac.model_coefficients_[2]/ransac.model_coefficients_[3];
 
-//  std::cout << "Model: "<< a << "X+"<< b << "Y+"<< c << "Z" << std::endl;
 
+//  std::cout << "Model: "<< a << "X+"<< b << "Y+"<< c << "Z" << std::endl;
 //  pcl::copyPointCloud (*cloud_ptr_, inliers, *cloud_ptr_);
 
   for (int i = 0; i < 4; ++i) {
@@ -475,4 +541,15 @@ void PoseEstimation::calculate_ransac() {
   }
 
 
+
+}
+
+Eigen::Affine3f PoseEstimation::create_rotation_matrix(float ax, float ay, float az) {
+  Eigen::Affine3f rx =
+      Eigen::Affine3f(Eigen::AngleAxisf(ax, Eigen::Vector3f(1, 0, 0)));
+  Eigen::Affine3f ry =
+      Eigen::Affine3f(Eigen::AngleAxisf(ay, Eigen::Vector3f(0, 1, 0)));
+  Eigen::Affine3f rz =
+      Eigen::Affine3f(Eigen::AngleAxisf(az, Eigen::Vector3f(0, 0, 1)));
+  return rz * ry * rx;
 }

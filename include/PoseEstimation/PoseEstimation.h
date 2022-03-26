@@ -15,9 +15,11 @@
 #include <pcl/point_types.h>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_perpendicular_plane.h>
+#include <pcl/sample_consensus/sac_model_plane.h>
 #include <pcl/conversions.h>
 #include <pcl/ModelCoefficients.h>
 #include <pcl/filters/frustum_culling.h>
+#include <jsoncpp/json/json.h>
 
 #include "ObjectDetection.h"
 
@@ -49,7 +51,7 @@ class PoseEstimation {
   void set_3d_aruco_a();
   void view_pointcloud();
 
-  bool load_from_rosbag = true; //! Select if input should be recorder rosbag or direct from camera.
+  bool load_from_rosbag = false; //! Select if input should be recorder rosbag or direct from camera.
 
 
   //! Camera
@@ -77,7 +79,7 @@ class PoseEstimation {
   std::vector<cv::Vec<double,3>> tvecs_;
 
   Eigen::Affine3f rot_trans_matrix_;
-
+  Eigen::Affine3f create_rotation_matrix(float ax, float ay, float az);
 
   //! Object detection
   ObjectDetection object_detection_object_;
@@ -91,6 +93,7 @@ class PoseEstimation {
     boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> pcl_points_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_pallet_;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr final_cloud_view_;
     pcl::visualization::PCLVisualizer::Ptr viewer_;
 
     std::vector<pcl::PointXYZ> square_frustum_detection_points_;
