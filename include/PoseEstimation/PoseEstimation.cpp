@@ -218,6 +218,7 @@ void PoseEstimation::edit_pointcloud() {
   pcl::PointCloud<pcl::PointXYZ>::Ptr local_pallet(new pcl::PointCloud<pcl::PointXYZ>);
 
   local_cloud = pcl_points_;
+  frustum_filter_inliers_.clear();
 
 //  pcl::PointCloud<pcl::PointXYZ>::Ptr merged_cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
@@ -285,8 +286,8 @@ void PoseEstimation::edit_pointcloud() {
   frustum_filter.setVerticalFOV(fov_v_rad_ * 57.2958);
   frustum_filter.setHorizontalFOV(fov_h_rad_ * 57.2958);
   frustum_filter.filter(*local_pallet);
+  frustum_filter.filter(frustum_filter_inliers_);
 
-  frustum_filter_inliers_ = frustum_filter.getIndices();
 
   cloud_pallet_ = local_pallet;
 
@@ -325,11 +326,13 @@ void PoseEstimation::view_pointcloud() {
     final_cloud_view->points[i].b = 255;
   }
 
+  if (frustum_filter_inliers_.size()>10){
+    std::cout << frustum_filter_inliers_.size() << std::endl;
+    for (int i = 0; i < frustum_filter_inliers_.size(); ++i) {
+      final_cloud_view->points[frustum_filter_inliers_.at(i)].b=0;
+    }
+  }
 
-  std::cout << frustum_filter_inliers_->size() << std::endl;
-//  for (int i = 0; i < frustum_filter_inliers_->size(); ++i) {
-//    final_cloud_view->points[frustum_filter_inliers_[i]].b=0;
-//  }
 
   for (int i = 0; i < inliers_.size(); ++i) {
     final_cloud_view->points[inliers_[i]].g = 0;
