@@ -13,9 +13,10 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/point_types.h>
-#include <pcl/sample_consensus/ransac.h>
-#include <pcl/sample_consensus/sac_model_perpendicular_plane.h>
-#include <pcl/sample_consensus/sac_model_plane.h>
+//#include <pcl/sample_consensus/ransac.h>
+//#include <pcl/sample_consensus/sac_model_perpendicular_plane.h>
+//#include <pcl/sample_consensus/sac_model_plane.h>
+#include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/filters/sampling_surface_normal.h>
 #include <pcl/conversions.h>
 #include <pcl/ModelCoefficients.h>
@@ -97,6 +98,7 @@ class PoseEstimation {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_pallet_;
     pcl::PointCloud<pcl::PointNormal>::Ptr output_cloud_with_normals_;
+    pcl::PointCloud<pcl::PointNormal>::Ptr final_with_normals_;
     pcl::visualization::PCLVisualizer::Ptr viewer_;
 
     std::vector<pcl::PointXYZ> square_frustum_detection_points_;
@@ -107,7 +109,7 @@ class PoseEstimation {
 
     //! Plane_estimation
     std::vector<float> ransac_model_coefficients_;
-    std::vector<int> inliers_;
+    pcl::PointIndices::Ptr inliers_;
     std::vector<int> frustum_filter_inliers_;
     pcl::PointXYZ plane_vector_intersect_;
 //    double zed_k_matrix_[4] = {529.34,529.05,646.7450,350.3870}; // TODO(simon) Get from camera. This is from ZED (fx, fy, cx, cy)
