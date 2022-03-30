@@ -32,11 +32,12 @@ void PoseEstimation::run_pose_estimation() {
 
   calculate_ransac(); //Debugging
 
-//  if (detection_output_struct_.width > 10  &&
-//      detection_output_struct_.height > 10 &&
-//      cloud_pallet_->size() > 170000){
+  if (detection_output_struct_.width > 10  &&
+      detection_output_struct_.height > 10 &&
+      wait_with_ransac_for_ > 10){
 //    calculate_ransac();
-//  }
+  }
+  wait_with_ransac_for_ += 1;
 
   view_pointcloud();
 
@@ -49,13 +50,13 @@ void PoseEstimation::run_pose_estimation() {
 
   image_ = cv_image;
 
-  object_detection_object_.run_object_detection(image_);
   calculate_aruco();
+  object_detection_object_.run_object_detection(image_);
   calculate_pose();
 
 
   cv::imshow("Output",cv_image);
-  cv::waitKey(33);
+  cv::waitKey(1);
 
   ransac_model_coefficients_.clear();
 
@@ -74,11 +75,10 @@ void PoseEstimation::setup_pose_estimation() {
 //
 //  std::cout << "config_path: " << config_path << std::endl;
 
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_151307.bag";
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_153225.bag"; // new
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag";
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_1903202/**/2/20220319_112640.bag"; //Standstill front
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "/home/nylund/Documents/git_uia/realtime_pose_estimation/data/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Standstill front
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_19032022/20220319_113007.bag"; //Standstill front
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 
@@ -88,8 +88,8 @@ void PoseEstimation::setup_pose_estimation() {
     rs2::config cfg;
     cfg.enable_device_from_file(rosbag_path_);
     p.start(cfg);
-
   }
+
   else if (!load_from_rosbag){
     p.start();
   }
@@ -327,7 +327,7 @@ void PoseEstimation::view_pointcloud() {
   }
 
   if (frustum_filter_inliers_.size()>10){
-    std::cout << frustum_filter_inliers_.size() << std::endl;
+//    std::cout << frustum_filter_inliers_.size() << std::endl;
     for (int i = 0; i < frustum_filter_inliers_.size(); ++i) {
       final_cloud_view->points[frustum_filter_inliers_.at(i)].b=0;
     }
@@ -344,7 +344,13 @@ void PoseEstimation::view_pointcloud() {
 
 
 
-  viewer_->addPointCloud(final_cloud_view);
+//  viewer_->addPointCloud(final_cloud_view);
+  viewer_->addPointCloud(cloud_pallet_);
+
+//  pcl::io::savePCDFileASCII("/home/nylund/Documents/git_uia/realtime_pose_estimation/exports/cloud_pallet_.pcd",*cloud_pallet_);
+//  pcl::io::savePCDFileASCII("/home/nylund/Documents/git_uia/realtime_pose_estimation/exports/final_cloud_view.pcd",*final_cloud_view);
+
+
 
   if (!rvecs_.empty() && !tvecs_.empty()){
     Eigen::Affine3f rotation;
@@ -381,7 +387,7 @@ void PoseEstimation::view_pointcloud() {
 
 //    rot_trans_matrix.fromPositionOrientationScale((1,1,1),(1,1,1),(1,1,1));
 
-    viewer_->addCoordinateSystem(0.535,rot_trans_matrix_,"aruco_marker",0);
+    viewer_->addCoordinateSystem(0.6,rot_trans_matrix_,"aruco_marker",0);
 //    viewer_->addCoordinateSystem(0.535,tvecs_.at(0)[0], tvecs_.at(0)[1], tvecs_.at(0)[2],"aruco_marker",0);
   }
 
@@ -419,7 +425,7 @@ void PoseEstimation::view_pointcloud() {
   }
 
 
-  viewer_->spinOnce(100);
+  viewer_->spinOnce(1);
 
 }
 void PoseEstimation::calculate_3d_crop() {
@@ -533,42 +539,72 @@ void PoseEstimation::calculate_ransac() {
   std::vector<int> inliers;
   inliers_.clear();
 
-  pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ>::Ptr
-      model_p (new pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ> (pcl_points_));
+  pcl::PointCloud<pcl::PointNormal>::Ptr input_cloud_with_normals(new pcl::PointCloud<pcl::PointNormal>);
+  pcl::PointCloud<pcl::PointNormal>::Ptr output_cloud_with_normals(new pcl::PointCloud<pcl::PointNormal>);
 
-  model_p->setAxis(Eigen::Vector3f(0.0,0.0,1.0)); // TODO(simon) ZED: (0.0,0.0,1.0) Realsense: (0.0,1.0,0.0)
-  model_p->setEpsAngle(0.5); // TODO(simon) Default 0.5
+  input_cloud_with_normals->clear();
+  output_cloud_with_normals->clear();
 
-  pcl::RandomSampleConsensus<pcl::PointXYZ> ransac (model_p);
-  ransac.setDistanceThreshold (0.01); // TODO(simon) Default 0.01
-  ransac.computeModel();
-  ransac.getInliers(inliers);
-
-
-  if (std::chrono::system_clock::now() > start_debug_time_){
-    std::cout << "inlines: " << inliers.size() << std::endl;
-    std::cout << "ransac.model_coefficients_: " << ransac.model_coefficients_[0] << " "
-              << ransac.model_coefficients_[1] << " " << ransac.model_coefficients_[2] << " "
-              << ransac.model_coefficients_[3] << std::endl;
+  input_cloud_with_normals->resize(cloud_pallet_->size());
+  for (int i = 0; i < cloud_pallet_->points.size(); ++i) {
+    input_cloud_with_normals->points.at(i).x = cloud_pallet_->at(i).x;
+    input_cloud_with_normals->points.at(i).y = cloud_pallet_->at(i).y;
+    input_cloud_with_normals->points.at(i).z = cloud_pallet_->at(i).z;
   }
 
-
-  double a = ransac.model_coefficients_[0]/ransac.model_coefficients_[3];
-  double b = ransac.model_coefficients_[1]/ransac.model_coefficients_[3];
-  double c = ransac.model_coefficients_[2]/ransac.model_coefficients_[3];
-
-
-//  std::cout << "Model: "<< a << "X+"<< b << "Y+"<< c << "Z" << std::endl;
-//  pcl::copyPointCloud (*cloud_ptr_, inliers, *cloud_ptr_);
-
-  for (int i = 0; i < 4; ++i) {
-    ransac_model_coefficients_.push_back(ransac.model_coefficients_[i]);
-  }
+//  std::cout << "input_cloud_with_normals size: " << input_cloud_with_normals->size() << std::endl;
 
 
 
-  inliers_ = inliers;
+//  //Sampling surface normals
+  pcl::SamplingSurfaceNormal<pcl::PointNormal> sample_surface_normal;
+  sample_surface_normal.setInputCloud(input_cloud_with_normals);
+  sample_surface_normal.setSample(10); // TODO(simon) Setting that is required to be a parameter.
+  sample_surface_normal.setRatio(1); // TODO(simon) Setting that is required to be a parameter.
+  sample_surface_normal.filter(*output_cloud_with_normals);
+
+  std::cout << "Calculating RANSAC" << std::endl;
+  std::cout << output_cloud_with_normals->size() << std::endl;
+
+  output_cloud_with_normals_ = output_cloud_with_normals;
+
+//  pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ>::Ptr
+//      model_p (new pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ> (cloud_ptr_)); // cloud_ptr_ | cloud_pallet_
+//
+//  model_p->setAxis(Eigen::Vector3f(0.0,0.0,1.0)); // TODO(simon) ZED: (0.0,0.0,1.0) Realsense: (0.0,1.0,0.0)
+//  model_p->setEpsAngle(0.5); // TODO(simon) Default 0.5
+//
+//  pcl::RandomSampleConsensus<pcl::PointXYZ> ransac (model_p);
+//  ransac.setDistanceThreshold (0.01); // TODO(simon) Default 0.01
+//  ransac.computeModel();
+//  ransac.getInliers(inliers);
+//
+//
+//  if (std::chrono::system_clock::now() > start_debug_time_){
+//    std::cout << "inlines: " << inliers.size() << std::endl;
+//    std::cout << "ransac.model_coefficients_: " << ransac.model_coefficients_[0] << " "
+//              << ransac.model_coefficients_[1] << " " << ransac.model_coefficients_[2] << " "
+//              << ransac.model_coefficients_[3] << std::endl;
+//  }
+//
+//
+//  double a = ransac.model_coefficients_[0]/ransac.model_coefficients_[3];
+//  double b = ransac.model_coefficients_[1]/ransac.model_coefficients_[3];
+//  double c = ransac.model_coefficients_[2]/ransac.model_coefficients_[3];
+//
+//
+////  std::cout << "Model: "<< a << "X+"<< b << "Y+"<< c << "Z" << std::endl;
+////  pcl::copyPointCloud (*cloud_ptr_, inliers, *cloud_ptr_);
+//
+//  for (int i = 0; i < 4; ++i) {
+//    ransac_model_coefficients_.push_back(ransac.model_coefficients_[i]);
+//  }
+//
+//
+//
+//  inliers_ = inliers;
 }
+
 
 Eigen::Affine3f PoseEstimation::create_rotation_matrix(float ax, float ay, float az) {
   Eigen::Affine3f rx =

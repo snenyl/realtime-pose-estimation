@@ -16,9 +16,12 @@
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_perpendicular_plane.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
+#include <pcl/filters/sampling_surface_normal.h>
 #include <pcl/conversions.h>
 #include <pcl/ModelCoefficients.h>
 #include <pcl/filters/frustum_culling.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
 #include <jsoncpp/json/json.h>
 
 #include "ObjectDetection.h"
@@ -93,6 +96,7 @@ class PoseEstimation {
     boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> pcl_points_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_pallet_;
+    pcl::PointCloud<pcl::PointNormal>::Ptr output_cloud_with_normals_;
     pcl::visualization::PCLVisualizer::Ptr viewer_;
 
     std::vector<pcl::PointXYZ> square_frustum_detection_points_;
@@ -117,6 +121,7 @@ class PoseEstimation {
     //! Time
     std::chrono::time_point<std::chrono::system_clock> start_debug_time_ = std::chrono::system_clock::now();
 
+    int wait_with_ransac_for_ = 0;
 
 
 };

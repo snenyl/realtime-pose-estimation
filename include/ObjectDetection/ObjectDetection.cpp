@@ -383,8 +383,12 @@ object_detection_output ObjectDetection::get_detection() {
 //        max_confidence = detection_output_struct_.at(i).confidence; // TODO(simon) Select for max confidence
 //        iterator_max_confidence = i;
 //      }
-      if (detection_output_struct_.at(i).width * detection_output_struct_.at(i).height > max_areal){
-        max_areal = detection_output_struct_.at(i).width * detection_output_struct_.at(i).height; // TODO(simon) Select for largest size
+//      if (detection_output_struct_.at(i).width * detection_output_struct_.at(i).height > max_areal){
+//        max_areal = detection_output_struct_.at(i).width * detection_output_struct_.at(i).height; // TODO(simon) Select for largest size
+//        iterator_max_confidence = i;
+//      }
+      if (detection_output_struct_.at(i).y + detection_output_struct_.at(i).height > max_areal){
+        max_areal = detection_output_struct_.at(i).y + detection_output_struct_.at(i).height; // TODO(simon) Select for lowest detected position
         iterator_max_confidence = i;
       }
     }
