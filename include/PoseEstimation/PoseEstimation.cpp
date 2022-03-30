@@ -75,10 +75,10 @@ void PoseEstimation::setup_pose_estimation() {
 //
 //  std::cout << "config_path: " << config_path << std::endl;
 
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag";
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag";
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "/home/nylund/Documents/git_uia/realtime_pose_estimation/data/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Standstill front
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Standstill front
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_19032022/20220319_113007.bag"; //Standstill front
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 
@@ -575,7 +575,7 @@ void PoseEstimation::calculate_ransac() {
 //  //Sampling surface normals
   pcl::SamplingSurfaceNormal<pcl::PointNormal> sample_surface_normal;
   sample_surface_normal.setInputCloud(input_cloud_with_normals);
-  sample_surface_normal.setSample(100); // TODO(simon) Setting that is required to be a parameter.
+  sample_surface_normal.setSample(5); // TODO(simon) Setting that is required to be a parameter.
   sample_surface_normal.setRatio(1); // TODO(simon) Setting that is required to be a parameter.
   sample_surface_normal.filter(*output_cloud_with_normals);
 
@@ -591,10 +591,10 @@ void PoseEstimation::calculate_ransac() {
   int counter = 0;
 
   for (int i = 0; i < output_cloud_with_normals_->size(); ++i) {
-    if (abs(output_cloud_with_normals_->at(i).normal_y)<0.45 &&
-        abs(output_cloud_with_normals_->at(i).x)>0.1 &&
-        abs(output_cloud_with_normals_->at(i).y)>0.1 &&
-        abs(output_cloud_with_normals_->at(i).z)>0.1)
+    if (abs(output_cloud_with_normals_->at(i).normal_y)<0.45 && //! Default 0.45 or 0.10
+        abs(output_cloud_with_normals_->at(i).x)>0.2 &&
+        abs(output_cloud_with_normals_->at(i).y)>0.2 &&
+        abs(output_cloud_with_normals_->at(i).z)>0.2)
     {
       final_with_normals_->emplace_back(output_cloud_with_normals_->at(i));
       counter++;
@@ -608,12 +608,12 @@ void PoseEstimation::calculate_ransac() {
   pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 
   segmentation.setOptimizeCoefficients(true);
-  segmentation.setModelType(pcl::SACMODEL_PLANE);
+  segmentation.setModelType(pcl::SACMODEL_PERPENDICULAR_PLANE); // TODO(simon) Test with different models SACMODEL_PLANE | SACMODEL_NORMAL_PLANE | SACMODEL_PERPENDICULAR_PLANE
   segmentation.setMethodType(pcl::SAC_RANSAC);
   segmentation.setMaxIterations(500);
   segmentation.setDistanceThreshold(0.05);
 
-  Eigen::Vector3f axis = Eigen::Vector3f(0.0,1.0,0.0);
+  Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
   segmentation.setAxis(axis);
   segmentation.setEpsAngle(0.5);
   segmentation.setInputCloud(final_with_normals_);
