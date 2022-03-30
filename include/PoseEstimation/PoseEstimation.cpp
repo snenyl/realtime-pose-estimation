@@ -591,7 +591,10 @@ void PoseEstimation::calculate_ransac() {
   int counter = 0;
 
   for (int i = 0; i < output_cloud_with_normals_->size(); ++i) {
-    if (abs(output_cloud_with_normals_->at(i).normal_y)<0.1)
+    if (abs(output_cloud_with_normals_->at(i).normal_y)<0.45 &&
+        abs(output_cloud_with_normals_->at(i).x)>0.1 &&
+        abs(output_cloud_with_normals_->at(i).y)>0.1 &&
+        abs(output_cloud_with_normals_->at(i).z)>0.1)
     {
       final_with_normals_->emplace_back(output_cloud_with_normals_->at(i));
       counter++;
