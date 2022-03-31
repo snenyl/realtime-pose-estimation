@@ -32,6 +32,10 @@ void PoseEstimation::run_pose_estimation() {
 
   calculate_ransac(); //Debugging
 
+  if (ransac_model_coefficients_.size() > 3){
+    calculate_pose_vector();
+  }
+
   if (detection_output_struct_.width > 10  &&
       detection_output_struct_.height > 10 &&
       wait_with_ransac_for_ > 10){
@@ -434,6 +438,19 @@ void PoseEstimation::view_pointcloud() {
     viewer_->addPlane(coff,0.0,0.0,0.0,"plane",0);
   }
 
+  if (intersect_point_.values.size() > 3){
+    viewer_->addSphere(intersect_point_,"circle",0);
+  }
+
+
+  if (ransac_model_coefficients_.size() > 2){
+    viewer_->addLine(pcl::PointXYZ(0,0,0),
+                     pcl::PointXYZ(ransac_model_coefficients_.at(0),
+                                   ransac_model_coefficients_.at(1),
+                                   abs(ransac_model_coefficients_.at(2))),0,255,0,
+                     "pose_vector",0);
+  }
+
 
   viewer_->spinOnce(1);
 
@@ -575,8 +592,8 @@ void PoseEstimation::calculate_ransac() {
 //  //Sampling surface normals
   pcl::SamplingSurfaceNormal<pcl::PointNormal> sample_surface_normal;
   sample_surface_normal.setInputCloud(input_cloud_with_normals);
-  sample_surface_normal.setSample(5); // TODO(simon) Setting that is required to be a parameter.
-  sample_surface_normal.setRatio(1); // TODO(simon) Setting that is required to be a parameter.
+  sample_surface_normal.setSample(50); // TODO(simon) Setting that is required to be a parameter.
+  sample_surface_normal.setRatio(0.5); // TODO(simon) Setting that is required to be a parameter.
   sample_surface_normal.filter(*output_cloud_with_normals);
 
 //  std::cout << "Calculating RANSAC" << std::endl;
@@ -592,9 +609,9 @@ void PoseEstimation::calculate_ransac() {
 
   for (int i = 0; i < output_cloud_with_normals_->size(); ++i) {
     if (abs(output_cloud_with_normals_->at(i).normal_y)<0.45 && //! Default 0.45 or 0.10
-        abs(output_cloud_with_normals_->at(i).x)>0.2 &&
-        abs(output_cloud_with_normals_->at(i).y)>0.2 &&
-        abs(output_cloud_with_normals_->at(i).z)>0.2)
+        abs(output_cloud_with_normals_->at(i).x)>0.2 &&  //! Remove vector at origo.
+        abs(output_cloud_with_normals_->at(i).y)>0.2 && //! Remove vector at origo.
+        abs(output_cloud_with_normals_->at(i).z)>0.2) //! Remove vector at origo.
     {
       final_with_normals_->emplace_back(output_cloud_with_normals_->at(i));
       counter++;
@@ -607,7 +624,7 @@ void PoseEstimation::calculate_ransac() {
   pcl::SACSegmentation<pcl::PointNormal> segmentation;
   pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 
-  segmentation.setOptimizeCoefficients(true);
+  segmentation.setOptimizeCoefficients(false);
   segmentation.setModelType(pcl::SACMODEL_PERPENDICULAR_PLANE); // TODO(simon) Test with different models SACMODEL_PLANE | SACMODEL_NORMAL_PLANE | SACMODEL_PERPENDICULAR_PLANE
   segmentation.setMethodType(pcl::SAC_RANSAC);
   segmentation.setMaxIterations(500);
@@ -626,6 +643,7 @@ void PoseEstimation::calculate_ransac() {
     std::cout << "ransac.model_coefficients: " << coefficients->values.at(i) << std::endl;
     ransac_model_coefficients_.emplace_back(coefficients->values.at(i));
   }
+//  std::cout << "getDistanceFromOrigin: " << segmentation.di() << std::endl;
 
 
 
@@ -669,4 +687,53 @@ Eigen::Affine3f PoseEstimation::create_rotation_matrix(float ax, float ay, float
   Eigen::Affine3f rz =
       Eigen::Affine3f(Eigen::AngleAxisf(az, Eigen::Vector3f(0, 0, 1)));
   return rz * ry * rx;
+}
+
+void PoseEstimation::calculate_pose_vector() {
+  // Calculating plane, vector intersection point and
+
+  intersect_point_.values.resize(4);
+  float distance_scalar = 0;
+  Eigen::Vector3f center_frustum_vector;
+  Eigen::Vector3f plane_vector_intersect;
+  Eigen::Vector3f plane_orgin;
+  Eigen::Vector3f plane_normal_vector;
+
+;
+  plane_vector_intersect_.x = -ransac_model_coefficients_.at(0)*ransac_model_coefficients_.at(3);
+  plane_vector_intersect_.y = -ransac_model_coefficients_.at(1)*ransac_model_coefficients_.at(3);
+  plane_vector_intersect_.z = -ransac_model_coefficients_.at(2)*ransac_model_coefficients_.at(3);
+
+  plane_orgin.x() = plane_vector_intersect_.x;
+  plane_orgin.y() = plane_vector_intersect_.y;
+  plane_orgin.z() = plane_vector_intersect_.z;
+
+  plane_normal_vector.x() = ransac_model_coefficients_.at(0);
+  plane_normal_vector.y() = ransac_model_coefficients_.at(1);
+  plane_normal_vector.z() = ransac_model_coefficients_.at(2);
+
+  center_frustum_vector.x() = center_frustum_.x;
+  center_frustum_vector.y() = center_frustum_.y;
+  center_frustum_vector.z() = center_frustum_.z;
+
+  distance_scalar = (plane_orgin.dot(plane_normal_vector))/
+                    (center_frustum_vector.dot(plane_normal_vector));
+
+  std::cout << "distance_scalar: " << distance_scalar << std::endl;
+
+  plane_vector_intersect = center_frustum_vector * distance_scalar;
+
+  std::cout << "plane_vector_intersect: " << plane_vector_intersect << std::endl;
+
+  intersect_point_.values[0] = plane_vector_intersect.x(); //plane_vector_intersect
+  intersect_point_.values[1] = plane_vector_intersect.y();
+  intersect_point_.values[2] = plane_vector_intersect.z();
+  intersect_point_.values[3] = 0.1;
+
+//  std::cout << "intersect_point_: " << "x: " <<intersect_point_.values[0]
+//                                    << "y: " <<intersect_point_.values[1]
+//                                    << "z: " <<intersect_point_.values[2] << std::endl;
+//  ransac_model_coefficients_;
+//  center_frustum_;
+
 }
