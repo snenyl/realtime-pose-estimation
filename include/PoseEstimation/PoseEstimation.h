@@ -126,6 +126,8 @@ class PoseEstimation {
     //! Pose vector:
     pcl::ModelCoefficients intersect_point_;
     pcl::PointXYZ plane_vector_intersect_;
+    pcl::PointXYZ plane_frustum_vector_intersect_;
+    pcl::PointXYZ pose_vector_end_point_;
 
 
 

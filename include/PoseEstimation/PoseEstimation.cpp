@@ -432,22 +432,20 @@ void PoseEstimation::view_pointcloud() {
                      "line_center",0);
   }
 
+//  if (ransac_model_coefficients_.size() > 2){
+//    pcl::ModelCoefficients coff;
+//    coff.values = ransac_model_coefficients_;
+//    viewer_->addPlane(coff,0.0,0.0,0.0,"plane",0);
+//  }
+
+//  if (intersect_point_.values.size() > 3){
+//    viewer_->addSphere(intersect_point_,"circle",0);
+//  }
+
+
   if (ransac_model_coefficients_.size() > 2){
-    pcl::ModelCoefficients coff;
-    coff.values = ransac_model_coefficients_;
-    viewer_->addPlane(coff,0.0,0.0,0.0,"plane",0);
-  }
-
-  if (intersect_point_.values.size() > 3){
-    viewer_->addSphere(intersect_point_,"circle",0);
-  }
-
-
-  if (ransac_model_coefficients_.size() > 2){
-    viewer_->addLine(pcl::PointXYZ(0,0,0),
-                     pcl::PointXYZ(ransac_model_coefficients_.at(0),
-                                   ransac_model_coefficients_.at(1),
-                                   abs(ransac_model_coefficients_.at(2))),0,255,0,
+    viewer_->addLine(plane_frustum_vector_intersect_,
+                     pose_vector_end_point_,0,255,0,
                      "pose_vector",0);
   }
 
@@ -729,6 +727,14 @@ void PoseEstimation::calculate_pose_vector() {
   intersect_point_.values[1] = plane_vector_intersect.y();
   intersect_point_.values[2] = plane_vector_intersect.z();
   intersect_point_.values[3] = 0.1;
+
+  plane_frustum_vector_intersect_.x = plane_vector_intersect.x();
+  plane_frustum_vector_intersect_.y = plane_vector_intersect.y();
+  plane_frustum_vector_intersect_.z = plane_vector_intersect.z();
+
+  pose_vector_end_point_.x = plane_vector_intersect.x() + ransac_model_coefficients_.at(0);
+  pose_vector_end_point_.y = plane_vector_intersect.y() + ransac_model_coefficients_.at(1);
+  pose_vector_end_point_.z = plane_vector_intersect.z() + abs(ransac_model_coefficients_.at(2));
 
 //  std::cout << "intersect_point_: " << "x: " <<intersect_point_.values[0]
 //                                    << "y: " <<intersect_point_.values[1]
