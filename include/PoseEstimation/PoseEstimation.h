@@ -130,7 +130,6 @@ class PoseEstimation {
     pcl::PointXYZ pose_vector_end_point_;
 
 
-
 };
 
 #endif //REALTIME_POSE_ESTIMATION_INCLUDE_POSEESTIMATION_H_

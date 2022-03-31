@@ -79,12 +79,11 @@ void PoseEstimation::setup_pose_estimation() {
 //
 //  std::cout << "config_path: " << config_path << std::endl;
 
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag";
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112907.bag"; //Standstill both aruco and detection
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Standstill front
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_19032022/20220319_113007.bag"; //Standstill front
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Standstill front
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162248_3meter_with_light_standing_aruco_0.bag"; //No vector normals detected, using raw cloud without filtering.
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161600_2meter_with_light_standing_aruco_2.bag"; //Nice
 
   if (load_from_rosbag){
     std::cout << "Loaded rosbag: " << rosbag_path_ << std::endl;
@@ -357,7 +356,8 @@ void PoseEstimation::view_pointcloud() {
 //    final_cloud_view->points[inliers_->indices.at(i)].b = 0;
 //  }
 
-//  viewer_->addPointCloud(final_cloud_view,"final_cloud",0);
+//! Adding and removing Pointclouds
+  viewer_->addPointCloud(final_cloud_view,"final_cloud",0);
 //  viewer_->addPointCloud(cloud_pallet_);
   viewer_->addPointCloudNormals<pcl::PointNormal>(final_with_normals_,100,0.1f,"final_normals",0);
 
@@ -631,7 +631,13 @@ void PoseEstimation::calculate_ransac() {
   Eigen::Vector3f axis = Eigen::Vector3f(0.0,0.0,1.0);
   segmentation.setAxis(axis);
   segmentation.setEpsAngle(0.5);
-  segmentation.setInputCloud(final_with_normals_);
+
+  if (final_with_normals_->size()>3){
+    segmentation.setInputCloud(final_with_normals_);
+  } else{
+    segmentation.setInputCloud(output_cloud_with_normals_);
+  }
+
   segmentation.segment (*inliers, *coefficients);
 
 
@@ -732,9 +738,14 @@ void PoseEstimation::calculate_pose_vector() {
   plane_frustum_vector_intersect_.y = plane_vector_intersect.y();
   plane_frustum_vector_intersect_.z = plane_vector_intersect.z();
 
-  pose_vector_end_point_.x = plane_vector_intersect.x() + ransac_model_coefficients_.at(0);
-  pose_vector_end_point_.y = plane_vector_intersect.y() + ransac_model_coefficients_.at(1);
-  pose_vector_end_point_.z = plane_vector_intersect.z() + abs(ransac_model_coefficients_.at(2));
+  if (ransac_model_coefficients_.at(2)>0){ // TODO(simon) required.
+    pose_vector_end_point_.x = plane_vector_intersect.x() + ransac_model_coefficients_.at(0);
+    pose_vector_end_point_.y = plane_vector_intersect.y() + ransac_model_coefficients_.at(1);
+    pose_vector_end_point_.z = plane_vector_intersect.z() + ransac_model_coefficients_.at(2);
+  }
+  else if (ransac_model_coefficients_.at(2)<0){
+
+  }
 
 //  std::cout << "intersect_point_: " << "x: " <<intersect_point_.values[0]
 //                                    << "y: " <<intersect_point_.values[1]
