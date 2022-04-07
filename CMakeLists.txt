@@ -15,6 +15,7 @@ find_package(PCL REQUIRED )
 
 add_subdirectory(include/PoseEstimation)
 add_subdirectory(include/ObjectDetection)
+add_subdirectory(include/Logger)
 
 
 include_directories(
