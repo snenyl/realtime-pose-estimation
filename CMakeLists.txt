@@ -2,9 +2,13 @@ cmake_minimum_required(VERSION 3.21)
 project(realtime_pose_estimation)
 
 set(CMAKE_CXX_STANDARD 17)
+set(ENV{OpenCV_DIR} "/usr/include/opencv4") # Select OpenCV with contrib
 set(OpenCV_DIR "/usr/include/opencv4") # Select OpenCV with contrib
 # /usr/include/opencv4
+# /usr/include/opencv4/opencv2
+# /usr/local/include/opencv2
 # /opt/intel/openvino_2021.4.752/opencv/include
+# /usr/lib/x86_64-linux-gnu/
 
 find_package(realsense2 REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -16,7 +20,6 @@ find_package(PCL REQUIRED )
 add_subdirectory(include/PoseEstimation)
 add_subdirectory(include/ObjectDetection)
 add_subdirectory(include/Logger)
-
 
 include_directories(
             ${OpenCV_INCLUDE_DIRS}
