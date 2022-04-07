@@ -89,7 +89,7 @@ void PoseEstimation::setup_pose_estimation() {
     std::cout << "Loaded rosbag: " << rosbag_path_ << std::endl;
 //    p.stop(); // TODO(simon) check if stream is running. p.get_active_profile().get_device()
     rs2::config cfg;
-    cfg.enable_device_from_file(rosbag_path_);
+    cfg.enable_device_from_file(rosbag_path_,!single_run_);
     p.start(cfg);
   }
 

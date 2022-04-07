@@ -56,7 +56,7 @@ class PoseEstimation {
   void view_pointcloud();
 
   bool load_from_rosbag = true; //! Select if input should be recorder rosbag or direct from camera.
-
+  bool single_run_ = false;
 
   //! Camera
   rs2::pipeline p;
