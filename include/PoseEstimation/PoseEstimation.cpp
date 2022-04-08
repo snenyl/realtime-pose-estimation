@@ -458,21 +458,28 @@ void PoseEstimation::view_pointcloud() {
 
 
   if (enable_logger){
-    std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv");
-    LoggerFile << plane_frustum_vector_intersect_.x << ","
-               << plane_frustum_vector_intersect_.y << ","
-               << plane_frustum_vector_intersect_.z << ","
-               << ransac_model_coefficients_.at(0) << ","
-               << ransac_model_coefficients_.at(1) << ","
-               << ransac_model_coefficients_.at(2) << ","
-               << tvecs_.at(0) << ","
-               << tvecs_.at(1) << ","
-               << tvecs_.at(2) << ","
-               << rvecs_.at(0) << ","
-               << rvecs_.at(1) << ","
-               << rvecs_.at(2) << std::endl;
+    std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv", std::ios_base::app | std::ios_base::out);
+    LoggerFile << "a,b,p_z,p_r,p_p,p_y,a_x,a_y,a_z,a_r,a_p,a_y" << std::endl;
     LoggerFile.close();
   }
+
+//    while (LoggerFile.is_open()){
+//          LoggerFile << plane_frustum_vector_intersect_.x << ","
+//                     << plane_frustum_vector_intersect_.y << ","
+//                     << plane_frustum_vector_intersect_.z << ","
+////                     << ransac_model_coefficients_.at(0) << ","
+////                     << ransac_model_coefficients_.at(1) << ","
+////                     << ransac_model_coefficients_.at(2) << ","
+////                     << tvecs_.at(0) << ","
+////                     << tvecs_.at(1) << ","
+////                     << tvecs_.at(2) << ","
+////                     << rvecs_.at(0) << ","
+////                     << rvecs_.at(1) << ","
+////                     << rvecs_.at(2)
+//                     << std::endl;
+//          LoggerFile.close();
+//    }
+//  }
 
 
 
