@@ -85,6 +85,13 @@ void PoseEstimation::setup_pose_estimation() {
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162248_3meter_with_light_standing_aruco_0.bag"; //No vector normals detected, using raw cloud without filtering.
   rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161600_2meter_with_light_standing_aruco_2.bag"; //Nice
 
+  if (enable_logger){
+    std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv");
+    LoggerFile << "p_x,p_y,p_z,p_r,p_p,p_y,a_x,a_y,a_z,a_r,a_p,a_y" << std::endl;
+    LoggerFile.close();
+  }
+
+
   if (load_from_rosbag){
     std::cout << "Loaded rosbag: " << rosbag_path_ << std::endl;
 //    p.stop(); // TODO(simon) check if stream is running. p.get_active_profile().get_device()
@@ -448,6 +455,26 @@ void PoseEstimation::view_pointcloud() {
                      pose_vector_end_point_,0,255,0,
                      "pose_vector",0);
   }
+
+
+  if (enable_logger){
+    std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv");
+    LoggerFile << plane_frustum_vector_intersect_.x << ","
+               << plane_frustum_vector_intersect_.y << ","
+               << plane_frustum_vector_intersect_.z << ","
+               << ransac_model_coefficients_.at(0) << ","
+               << ransac_model_coefficients_.at(1) << ","
+               << ransac_model_coefficients_.at(2) << ","
+               << tvecs_.at(0) << ","
+               << tvecs_.at(1) << ","
+               << tvecs_.at(2) << ","
+               << rvecs_.at(0) << ","
+               << rvecs_.at(1) << ","
+               << rvecs_.at(2) << std::endl;
+    LoggerFile.close();
+  }
+
+
 
 
   viewer_->spinOnce(1);

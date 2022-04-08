@@ -5,6 +5,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <fstream>
 
 #include "librealsense2/rs.hpp"
 #include "opencv2/opencv.hpp"
@@ -56,7 +57,8 @@ class PoseEstimation {
   void view_pointcloud();
 
   bool load_from_rosbag = true; //! Select if input should be recorder rosbag or direct from camera.
-  bool single_run_ = false;
+  bool single_run_ = true;
+  bool enable_logger = false;
 
   //! Camera
   rs2::pipeline p;
