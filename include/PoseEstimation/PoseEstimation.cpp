@@ -82,6 +82,7 @@ void PoseEstimation::setup_pose_estimation() {
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Standstill front
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag"; //Nice
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162248_3meter_with_light_standing_aruco_0.bag"; //No vector normals detected, using raw cloud without filtering.
   rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161600_2meter_with_light_standing_aruco_2.bag"; //Nice
 
@@ -364,11 +365,11 @@ void PoseEstimation::view_pointcloud() {
 //  }
 
 //! Adding and removing Pointclouds
-//  viewer_->addPointCloud(final_cloud_view,"final_cloud",0); //! Everything with color
+  viewer_->addPointCloud(final_cloud_view,"final_cloud",0); //! Everything with color
 //  viewer_->addPointCloud(cloud_pallet_); //! Only pallet
 //  viewer_->addPointCloud(final_); //! RANSAC test
 //  viewer_->addPointCloudNormals<pcl::PointNormal>(output_cloud_with_normals_,100,0.1f,"final_normals",0);
-  viewer_->addPointCloudNormals<pcl::PointNormal>(extracted_cloud_with_normals_,100,0.1f,"extracted_normals",0);
+//  viewer_->addPointCloudNormals<pcl::PointNormal>(extracted_cloud_with_normals_,100,0.1f,"extracted_normals",0);
 
 //  pcl::io::savePCDFileASCII("/home/nylund/Documents/git_uia/realtime_pose_estimation/exports/cloud_pallet_.pcd",*cloud_pallet_);
 //  pcl::io::savePCDFileASCII("/home/nylund/Documents/git_uia/realtime_pose_estimation/exports/final_cloud_view.pcd",*final_cloud_view);
@@ -892,7 +893,7 @@ void PoseEstimation::calculate_pose_vector() {
 
   if (second_ransac_model_coefficients_.at(2)>0){ // TODO(simon) required.
     pose_vector_end_point_.x = plane_vector_intersect.x() + second_ransac_model_coefficients_.at(0);
-    pose_vector_end_point_.y = plane_vector_intersect.y() + second_ransac_model_coefficients_.at(1);
+    pose_vector_end_point_.y = plane_vector_intersect.y() + (-1*first_ransac_model_coefficients_.at(2));
     pose_vector_end_point_.z = plane_vector_intersect.z() + second_ransac_model_coefficients_.at(2);
   }
   else if (ransac_model_coefficients_.at(2)<0){
