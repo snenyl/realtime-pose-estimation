@@ -364,10 +364,11 @@ void PoseEstimation::view_pointcloud() {
 //  }
 
 //! Adding and removing Pointclouds
-  viewer_->addPointCloud(final_cloud_view,"final_cloud",0); //! Everything with color
+//  viewer_->addPointCloud(final_cloud_view,"final_cloud",0); //! Everything with color
 //  viewer_->addPointCloud(cloud_pallet_); //! Only pallet
 //  viewer_->addPointCloud(final_); //! RANSAC test
-  viewer_->addPointCloudNormals<pcl::PointNormal>(output_cloud_with_normals_,100,0.1f,"final_normals",0);
+//  viewer_->addPointCloudNormals<pcl::PointNormal>(output_cloud_with_normals_,100,0.1f,"final_normals",0);
+  viewer_->addPointCloudNormals<pcl::PointNormal>(extracted_cloud_with_normals_,100,0.1f,"extracted_normals",0);
 
 //  pcl::io::savePCDFileASCII("/home/nylund/Documents/git_uia/realtime_pose_estimation/exports/cloud_pallet_.pcd",*cloud_pallet_);
 //  pcl::io::savePCDFileASCII("/home/nylund/Documents/git_uia/realtime_pose_estimation/exports/final_cloud_view.pcd",*final_cloud_view);
@@ -445,6 +446,13 @@ void PoseEstimation::view_pointcloud() {
     coff.values = ransac_model_coefficients_;
     viewer_->addPlane(coff,0.0,0.0,0.0,"plane",0);
   }
+
+  if (second_ransac_model_coefficients_.size() > 2){
+    pcl::ModelCoefficients coff;
+    coff.values = second_ransac_model_coefficients_;
+    viewer_->addPlane(coff,0.0,0.0,0.0,"pallet_plane",0);
+  }
+
 
 //  if (first_ransac_model_coefficients_.size() > 2){
 //    pcl::ModelCoefficients coff;
@@ -645,6 +653,7 @@ void PoseEstimation::calculate_ransac() {
 
   first_ransac_model_coefficients_.clear();
   for (int i = 0; i < first_coefficients->values.size(); ++i) {
+    std::cout << "ransac.first_ransac_model_coefficients_: " << first_coefficients->values.at(i) << std::endl;
     first_ransac_model_coefficients_.emplace_back(first_coefficients->values.at(i));
   }
 
@@ -737,11 +746,12 @@ void PoseEstimation::calculate_ransac() {
   segmentation.setMaxIterations(500);
   segmentation.setDistanceThreshold(0.1);
 
-  segmentation.setEpsAngle(0.5);
+  segmentation.setEpsAngle(0.1);
   segmentation.setInputCloud(output_cloud_with_normals_);
   segmentation.setInputNormals(output_cloud_with_normals_);
 
   segmentation.segment (*inliers, *coefficients);
+
 
 
   ransac_model_coefficients_.clear();
@@ -750,6 +760,45 @@ void PoseEstimation::calculate_ransac() {
     std::cout << "ransac.model_coefficients: " << coefficients->values.at(i) << std::endl;
     ransac_model_coefficients_.emplace_back(coefficients->values.at(i));
   }
+
+
+  pcl::PointCloud<pcl::PointNormal>::Ptr extracted_cloud_with_normals(new pcl::PointCloud<pcl::PointNormal>);
+  //Extract all points
+  pcl::ExtractIndices<pcl::PointNormal> extract_filter;
+  extract_filter.setInputCloud(output_cloud_with_normals_);
+  extract_filter.setNegative(true);
+  extract_filter.setIndices(inliers);
+  extract_filter.filter(*extracted_cloud_with_normals);
+
+  std::cout << "extracted_cloud_with_normals size: " << extracted_cloud_with_normals->points.size() << std::endl;
+  extracted_cloud_with_normals_ = extracted_cloud_with_normals;
+
+
+  // RANSAC 2
+  pcl::SACSegmentationFromNormals<pcl::PointNormal,pcl::PointNormal> second_segmentation;
+  pcl::ModelCoefficients::Ptr second_coefficients (new pcl::ModelCoefficients);
+  pcl::PointIndices::Ptr second_inliers (new pcl::PointIndices);
+
+  second_segmentation.setOptimizeCoefficients(true);
+  second_segmentation.setModelType(pcl::SACMODEL_NORMAL_PLANE); // TODO(simon) Test with different models SACMODEL_PLANE | SACMODEL_NORMAL_PLANE | SACMODEL_PERPENDICULAR_PLANE
+  second_segmentation.setMethodType(pcl::SAC_RANSAC);
+  second_segmentation.setMaxIterations(500);
+  second_segmentation.setDistanceThreshold(0.1);
+
+  second_segmentation.setEpsAngle(0.1);
+  second_segmentation.setInputCloud(extracted_cloud_with_normals_);
+  second_segmentation.setInputNormals(extracted_cloud_with_normals_);
+
+  second_segmentation.segment (*second_inliers, *second_coefficients);
+
+  second_ransac_model_coefficients_.clear();
+  std::cout << "second_inliers: " << second_inliers->indices.size() << std::endl;
+  for (int i = 0; i < second_coefficients->values.size(); ++i) {
+    std::cout << "ransac.second_model_coefficients: " << second_coefficients->values.at(i) << std::endl;
+    second_ransac_model_coefficients_.emplace_back(second_coefficients->values.at(i));
+  }
+
+
 //  std::cout << "getDistanceFromOrigin: " << segmentation.di() << std::endl;
 
 
