@@ -890,10 +890,10 @@ void PoseEstimation::calculate_pose_vector() {
   plane_frustum_vector_intersect_.y = plane_vector_intersect.y();
   plane_frustum_vector_intersect_.z = plane_vector_intersect.z();
 
-  if (ransac_model_coefficients_.at(2)>0){ // TODO(simon) required.
-    pose_vector_end_point_.x = plane_vector_intersect.x() + ransac_model_coefficients_.at(0);
-    pose_vector_end_point_.y = plane_vector_intersect.y() + ransac_model_coefficients_.at(1);
-    pose_vector_end_point_.z = plane_vector_intersect.z() + ransac_model_coefficients_.at(2);
+  if (second_ransac_model_coefficients_.at(2)>0){ // TODO(simon) required.
+    pose_vector_end_point_.x = plane_vector_intersect.x() + second_ransac_model_coefficients_.at(0);
+    pose_vector_end_point_.y = plane_vector_intersect.y() + second_ransac_model_coefficients_.at(1);
+    pose_vector_end_point_.z = plane_vector_intersect.z() + second_ransac_model_coefficients_.at(2);
   }
   else if (ransac_model_coefficients_.at(2)<0){
 
