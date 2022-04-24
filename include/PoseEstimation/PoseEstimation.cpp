@@ -456,9 +456,21 @@ void PoseEstimation::view_pointcloud() {
                      "pose_vector",0);
   }
 
-  if (enable_logger_){
+  if (enable_logger_ && ransac_model_coefficients_.size() > 1 /*&& tvecs_.size() > 1 && rvecs_.size() > 1*/){
     std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv", std::ios_base::app | std::ios_base::out);
-    LoggerFile << plane_frustum_vector_intersect_.x << ",b,p_z,p_r,p_p,p_y,a_x,a_y,a_z,a_r,a_p,a_y" << std::endl;
+        LoggerFile << plane_frustum_vector_intersect_.x << ","
+               << plane_frustum_vector_intersect_.y << ","
+               << plane_frustum_vector_intersect_.z << ","
+               << ransac_model_coefficients_.at(0) << ","
+               << ransac_model_coefficients_.at(1) << ","
+               << ransac_model_coefficients_.at(2) /*<< ","*/
+//               << tvecs_.at(0) << ","
+//               << tvecs_.at(1) << ","
+//               << tvecs_.at(2) << ","
+//               << rvecs_.at(0) << ","
+//               << rvecs_.at(1) << ","
+//               << rvecs_.at(2)
+               << std::endl;
     LoggerFile.close();
   }
 
@@ -618,12 +630,10 @@ void PoseEstimation::calculate_ransac() {
 
 //  std::cout << "input_cloud_with_normals size: " << input_cloud_with_normals->size() << std::endl;
 
-
-
 //  //Sampling surface normals
   pcl::SamplingSurfaceNormal<pcl::PointNormal> sample_surface_normal;
   sample_surface_normal.setInputCloud(input_cloud_with_normals);
-  sample_surface_normal.setSample(50); // TODO(simon) Setting that is required to be a parameter.
+  sample_surface_normal.setSample(100); // TODO(simon) Setting that is required to be a parameter.
   sample_surface_normal.setRatio(0.5); // TODO(simon) Setting that is required to be a parameter.
   sample_surface_normal.filter(*output_cloud_with_normals);
 
