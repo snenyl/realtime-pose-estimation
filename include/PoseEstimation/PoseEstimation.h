@@ -50,16 +50,17 @@ class PoseEstimation {
   void load_pointcloud();
   void edit_pointcloud();
   void calculate_ransac();
-  void calculate_rotation();
+  void calculate_rotation_units();
   void calculate_pose_vector();
   void calculate_3d_crop();
   pcl::PointCloud<pcl::PointXYZ>::Ptr points_to_pcl(const rs2::points& points);
   void set_3d_aruco_a();
   void view_pointcloud();
+  void log_data();
 
   bool load_from_rosbag = true; //! Select if input should be recorder rosbag or direct from camera.
   bool single_run_ = false;
-  bool enable_logger_ = false;
+  bool enable_logger_ = true;
 
   //! Camera
   rs2::pipeline p;
@@ -85,13 +86,17 @@ class PoseEstimation {
   std::vector<cv::Vec<double,3>> rvecs_;
   std::vector<cv::Vec<double,3>> tvecs_;
 
+  std::vector<double> rotation_deg_;
+
   Eigen::Affine3f rot_trans_matrix_;
   Eigen::Affine3f create_rotation_matrix(float ax, float ay, float az);
 
   //! Object detection
   ObjectDetection object_detection_object_;
+  ObjectDetection pallet_void_object_detection_object_;
 
   object_detection_output detection_output_struct_;
+  object_detection_output pallet_void_detection_output_struct_;
 
   //! Pose Estimation
     //! Point cloud

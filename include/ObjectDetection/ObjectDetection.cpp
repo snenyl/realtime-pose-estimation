@@ -5,11 +5,11 @@
 #include "ObjectDetection.h"
 
 void ObjectDetection::setup_object_detection() {
-  std::string model_path = "models/yolox_s_only_pallet_294epoch_o10/yolox_s_only_pallet_294epoch_o10.xml";
-  input_model_path_ = std::filesystem::current_path().parent_path() / model_path;
+//  model_path_ = "models/yolox_s_only_pallet_294epoch_o10/yolox_s_only_pallet_294epoch_o10.xml";
+  input_model_path_ = std::filesystem::current_path().parent_path() / model_path_;
 
-  nms_threshold_ = 0.45; // Default 0.45
-  bbox_conf_threshold_ = 0.75; // Default 0.25
+//  nms_threshold_ = 0.45; // Default 0.45
+//  bbox_conf_threshold_ = 0.75; // Default 0.25
   num_classes_ = 1;
   input_dimensions_.width = 640;
   input_dimensions_.height = 640;
@@ -402,4 +402,11 @@ object_detection_output ObjectDetection::get_detection() {
 
   return non_detect;
 }
-
+void ObjectDetection::set_model_path(std::string path) {
+  model_path_ = path;
+}
+void ObjectDetection::set_object_detection_settings(float nms_threshold,
+                                                    float bbox_conf_threshold) {
+  nms_threshold_ = nms_threshold; // Default 0.45
+  bbox_conf_threshold_ = bbox_conf_threshold; // Default 0.25 or 0.75
+}

@@ -59,6 +59,7 @@ void PoseEstimation::run_pose_estimation() {
   calculate_pose();
 
 
+  log_data();
   cv::imshow("Output",cv_image);
   cv::waitKey(1);
 
@@ -84,8 +85,10 @@ void PoseEstimation::setup_pose_estimation() {
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag"; //Nice
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162248_3meter_with_light_standing_aruco_0.bag"; //No vector normals detected, using raw cloud without filtering.
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161600_2meter_with_light_standing_aruco_2.bag"; //Nice
-
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Nice
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161600_2meter_with_light_standing_aruco_2.bag"; //Nice - Used for data_out_3
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161615_2meter_with_light_standing_aruco_4.bag"; //Test
+//
   if (enable_logger_){
     std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv");
     LoggerFile << "p_x,p_y,p_z,p_r,p_p,p_y,a_x,a_y,a_z,a_r,a_p,a_y" << std::endl;
@@ -108,7 +111,9 @@ void PoseEstimation::setup_pose_estimation() {
 //  rs2_get_video_stream_intrinsics()
 
   set_camera_parameters();
-  
+
+  object_detection_object_.set_model_path("models/yolox_s_only_pallet_294epoch_o10/yolox_s_only_pallet_294epoch_o10.xml");
+  object_detection_object_.set_object_detection_settings(0.45,0.80);
   object_detection_object_.setup_object_detection();
   pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
   viewer_ = viewer;
@@ -475,23 +480,10 @@ void PoseEstimation::view_pointcloud() {
                      "pose_vector",0);
   }
 
-  if (enable_logger_ && ransac_model_coefficients_.size() > 1 /*&& tvecs_.size() > 1 && rvecs_.size() > 1*/){
-    std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv", std::ios_base::app | std::ios_base::out);
-        LoggerFile << plane_frustum_vector_intersect_.x << ","
-               << plane_frustum_vector_intersect_.y << ","
-               << plane_frustum_vector_intersect_.z << ","
-               << ransac_model_coefficients_.at(0) << ","
-               << ransac_model_coefficients_.at(1) << ","
-               << ransac_model_coefficients_.at(2) /*<< ","*/
-//               << tvecs_.at(0) << ","
-//               << tvecs_.at(1) << ","
-//               << tvecs_.at(2) << ","
-//               << rvecs_.at(0) << ","
-//               << rvecs_.at(1) << ","
-//               << rvecs_.at(2)
-               << std::endl;
-    LoggerFile.close();
-  }
+
+
+
+
 
 //    while (LoggerFile.is_open()){
 //          LoggerFile << plane_frustum_vector_intersect_.x << ","
@@ -905,5 +897,44 @@ void PoseEstimation::calculate_pose_vector() {
 //                                    << "z: " <<intersect_point_.values[2] << std::endl;
 //  ransac_model_coefficients_;
 //  center_frustum_;
+
+}
+void PoseEstimation::calculate_rotation_units() {
+
+
+}
+
+
+
+void PoseEstimation::log_data() {
+
+
+//  //TODO(simon) Add  rvecs_deg
+
+  if (enable_logger_ && ransac_model_coefficients_.size() > 1 && tvecs_.size() > 1 && rvecs_.size() > 1){
+    std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv", std::ios_base::app | std::ios_base::out);
+    LoggerFile << plane_frustum_vector_intersect_.x << ","
+               << plane_frustum_vector_intersect_.y << ","
+               << plane_frustum_vector_intersect_.z << ","
+               << ransac_model_coefficients_.at(0) << ","
+               << ransac_model_coefficients_.at(1) << ","
+               << ransac_model_coefficients_.at(2) << ","
+               << tvecs_.at(0) << ","
+               << tvecs_.at(1) << ","
+               << tvecs_.at(2) << ","
+               << rvecs_.at(0) * 57.2958 << ","
+               << rvecs_.at(1) * 57.2958 << ","
+               << rvecs_.at(2) * 57.2958
+               << std::endl;
+    LoggerFile.close();
+  }
+
+  else {
+    std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv", std::ios_base::app | std::ios_base::out);
+    LoggerFile << std::endl;
+    LoggerFile.close();
+  }
+
+
 
 }

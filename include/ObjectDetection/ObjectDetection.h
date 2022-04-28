@@ -46,6 +46,8 @@ class ObjectDetection {
  public:
   void setup_object_detection();
   void run_object_detection(cv::Mat &image);
+  void set_model_path(std::string path);
+  void set_object_detection_settings(float nms_threshold, float bbox_conf_threshold);
 
   object_detection_output get_detection();
 
@@ -68,6 +70,7 @@ class ObjectDetection {
   float bbox_conf_threshold_;
   int num_classes_;
   dimensions input_dimensions_;
+  std::string model_path_;
   std::string input_model_path_;
   std::string device_name_;
 
