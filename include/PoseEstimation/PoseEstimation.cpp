@@ -14,6 +14,7 @@ void PoseEstimation::run_pose_estimation() {
 
   detection_output_struct_ = object_detection_object_.get_detection();
 
+
   if (std::chrono::system_clock::now() > start_debug_time_){
     std::cout << " X: " << detection_output_struct_.x
               << " Y: " << detection_output_struct_.y
@@ -84,10 +85,10 @@ void PoseEstimation::setup_pose_estimation() {
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Standstill front
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag"; //Nice
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162248_3meter_with_light_standing_aruco_0.bag"; //No vector normals detected, using raw cloud without filtering.
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Nice
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161600_2meter_with_light_standing_aruco_2.bag"; //Nice - Used for data_out_3
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161615_2meter_with_light_standing_aruco_4.bag"; //Test
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_161600_2meter_with_light_standing_aruco_2.bag";
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Nice
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag"; //Nice
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162326_3meter_with_light_standing_aruco_4.bag"; //Nice - Used for data_out_3
 //
   if (enable_logger_){
     std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv");
@@ -112,8 +113,9 @@ void PoseEstimation::setup_pose_estimation() {
 
   set_camera_parameters();
 
+//  object_detection_object_.set_model_path("models/yolox_s_only_pallet_void_300epoch_o10/yolox_s_only_pallet_void_300epoch_lim_o10.xml");
   object_detection_object_.set_model_path("models/yolox_s_only_pallet_294epoch_o10/yolox_s_only_pallet_294epoch_o10.xml");
-  object_detection_object_.set_object_detection_settings(0.45,0.80);
+  object_detection_object_.set_object_detection_settings(0.45,0.75);
   object_detection_object_.setup_object_detection();
   pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
   viewer_ = viewer;
@@ -909,22 +911,20 @@ void PoseEstimation::calculate_rotation_units() {
 void PoseEstimation::log_data() {
 
 
-//  //TODO(simon) Add  rvecs_deg
-
-  if (enable_logger_ && ransac_model_coefficients_.size() > 1 && tvecs_.size() > 1 && rvecs_.size() > 1){
+  if (enable_logger_ && ransac_model_coefficients_.size() > 1 && tvecs_.size() >= 1 && rvecs_.size() >= 1){
     std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv", std::ios_base::app | std::ios_base::out);
     LoggerFile << plane_frustum_vector_intersect_.x << ","
                << plane_frustum_vector_intersect_.y << ","
                << plane_frustum_vector_intersect_.z << ","
-               << ransac_model_coefficients_.at(0) << ","
-               << ransac_model_coefficients_.at(1) << ","
-               << ransac_model_coefficients_.at(2) << ","
-               << tvecs_.at(0) << ","
-               << tvecs_.at(1) << ","
-               << tvecs_.at(2) << ","
-               << rvecs_.at(0) * 57.2958 << ","
-               << rvecs_.at(1) * 57.2958 << ","
-               << rvecs_.at(2) * 57.2958
+               << second_ransac_model_coefficients_.at(0) << ","
+               << (-1*first_ransac_model_coefficients_.at(2)) << ","
+               << second_ransac_model_coefficients_.at(2) << ","
+               << tvecs_.at(0)[0] << ","
+               << tvecs_.at(0)[1] << ","
+               << tvecs_.at(0)[2] << ","
+               << rvecs_.at(0)[0] * 57.2958 << ","
+               << rvecs_.at(0)[1] * 57.2958 << ","
+               << rvecs_.at(0)[2] * 57.2958
                << std::endl;
     LoggerFile.close();
   }
@@ -934,7 +934,5 @@ void PoseEstimation::log_data() {
     LoggerFile << std::endl;
     LoggerFile.close();
   }
-
-
 
 }

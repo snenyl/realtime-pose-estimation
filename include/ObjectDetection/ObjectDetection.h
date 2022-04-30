@@ -63,6 +63,11 @@ class ObjectDetection {
   void nms_sorted_bboxes(const std::vector<Object>& faceobjects, std::vector<int>& picked, float nms_threshold);
   inline float intersection_area(const Object& a, const Object& b);
   void draw_objects(const cv::Mat& bgr, const std::vector<Object>& objects);
+  double box_filtering(double image_width,
+                       double image_height,
+                       std::vector<object_detection_output> detection,
+                       bool left_side_of_image,
+                       uint16_t i);
 
   //! Settings
 

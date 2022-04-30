@@ -376,6 +376,9 @@ object_detection_output ObjectDetection::get_detection() {
   double max_confidence = 0;
   double max_areal = 0;
   int iterator_max_confidence = 0;
+  uint32_t image_width = 1280; // TODO(simon) Set this as an input image_.cols
+  uint32_t image_height = 720; // TODO(simon) Set this as an input image_.rows
+
 
   if (!detection_output_struct_.empty()){
     for (int i = 0; i < detection_output_struct_.size(); ++i) {
@@ -387,9 +390,23 @@ object_detection_output ObjectDetection::get_detection() {
 //        max_areal = detection_output_struct_.at(i).width * detection_output_struct_.at(i).height; // TODO(simon) Select for largest size
 //        iterator_max_confidence = i;
 //      }
-      if (detection_output_struct_.at(i).y + detection_output_struct_.at(i).height > max_areal){
-        max_areal = detection_output_struct_.at(i).y + detection_output_struct_.at(i).height; // TODO(simon) Select for lowest detected position
-        iterator_max_confidence = i;
+//      if (detection_output_struct_.at(i).y + detection_output_struct_.at(i).height > max_areal){
+//        max_areal = detection_output_struct_.at(i).y + detection_output_struct_.at(i).height; // TODO(simon) Select for lowest detected position
+//        iterator_max_confidence = i;
+//      }
+      if (detection_output_struct_.at(i).x + (detection_output_struct_.at(i).width/2)>image_width/2){
+        std::cout << "tPallet: " << i << std::endl;
+        if (box_filtering(image_width,image_height,detection_output_struct_,false,i)>max_areal){
+          max_areal = box_filtering(image_width,image_height,detection_output_struct_,false,i);
+          iterator_max_confidence = i;
+        }
+      }
+      else{
+        std::cout << "fPallet: " << i << std::endl;
+        if (box_filtering(image_width,image_height,detection_output_struct_,true,i)>max_areal){
+          max_areal = box_filtering(image_width,image_height,detection_output_struct_,true,i);
+          iterator_max_confidence = i;
+        }
       }
     }
   }
@@ -409,4 +426,48 @@ void ObjectDetection::set_object_detection_settings(float nms_threshold,
                                                     float bbox_conf_threshold) {
   nms_threshold_ = nms_threshold; // Default 0.45
   bbox_conf_threshold_ = bbox_conf_threshold; // Default 0.25 or 0.75
+}
+double ObjectDetection::box_filtering(double image_width,
+                                      double image_height,
+                                      std::vector<object_detection_output> detection,
+                                      bool left_side_of_image,
+                                      uint16_t i) {
+  double a = 0;
+  double b = 0;
+  std::cout << "i: " << i << std::endl;
+  std::cout << "X Center: " << detection_output_struct_.at(i).x + (detection_output_struct_.at(i).width/2)  << std::endl;
+  std::cout << "image_height: " << image_height
+            << "\ndetection_output_struct_.at(i).y: " << detection_output_struct_.at(i).y
+            << "\ndetection_output_struct_.at(i).height: " << detection_output_struct_.at(i).height
+            << std::endl;
+
+  b = ((static_cast<double>(detection_output_struct_.at(i).y)+
+       static_cast<double>(detection_output_struct_.at(i).height))/
+       static_cast<double>(image_height));
+
+  std::cout << "b: " << b << std::endl;
+
+  if (left_side_of_image){
+//    a = (2-(static_cast<double>(detection_output_struct_.at(i).width)/2)/
+//        (static_cast<double>(image_width)/2));
+    a = ((static_cast<double>(detection_output_struct_.at(i).width)/2)/
+        (static_cast<double>(image_width)/2));
+
+  }
+  else{
+    a = ((static_cast<double>(detection_output_struct_.at(i).width)/2)/
+        (static_cast<double>(image_width)/2));
+  }
+
+  std::cout << "a: " << a << std::endl;
+  std::cout << "a*b: " << a*b << std::endl;
+
+//  max_areal = (2-((static_cast<double>(image_width)/2)/(static_cast<double>(detection_output_struct_.at(i).width)/2)))*
+//      (static_cast<double>(image_height)/(static_cast<double>(detection_output_struct_.at(i).y)+static_cast<double>(detection_output_struct_.at(i).height)));
+//  std::cout << "A: " << (2-((static_cast<double>(image_width)/2)/(static_cast<double>(detection_output_struct_.at(i).width)/2)))  << std::endl;
+//  std::cout << "B: " << (static_cast<double>(image_height)/(static_cast<double>(detection_output_struct_.at(i).y)+static_cast<double>(detection_output_struct_.at(i).height)))  << std::endl;
+//  std::cout << "max_areal: " << max_areal  << std::endl;
+
+
+  return a*b;
 }
