@@ -56,10 +56,10 @@ class PoseEstimation {
   pcl::PointCloud<pcl::PointXYZ>::Ptr points_to_pcl(const rs2::points& points);
   void set_3d_aruco_a();
   void view_pointcloud();
-  void log_data();
+  void log_data(uint32_t frame);
 
   bool load_from_rosbag = true; //! Select if input should be recorder rosbag or direct from camera.
-  bool single_run_ = false;
+  bool single_run_ = true;
   bool enable_logger_ = true;
 
   //! Camera
@@ -130,16 +130,20 @@ class PoseEstimation {
     float fov_v_rad_;
 
   float fov_h_rad_;
-    //! Time
-    std::chrono::time_point<std::chrono::system_clock> start_debug_time_ = std::chrono::system_clock::now();
+  //! Time
+  std::chrono::time_point<std::chrono::system_clock> start_debug_time_ = std::chrono::system_clock::now();
 
-    int wait_with_ransac_for_ = 0;
+  int wait_with_ransac_for_ = 0;
 
-    //! Pose vector:
-    pcl::ModelCoefficients intersect_point_;
-    pcl::PointXYZ plane_vector_intersect_;
-    pcl::PointXYZ plane_frustum_vector_intersect_;
-    pcl::PointXYZ pose_vector_end_point_;
+  //! Pose vector:
+  pcl::ModelCoefficients intersect_point_;
+  pcl::PointXYZ plane_vector_intersect_;
+  pcl::PointXYZ plane_frustum_vector_intersect_;
+  pcl::PointXYZ pose_vector_end_point_;
+
+  //! Logger
+  uint32_t last_frame_;
+  uint32_t first_frame_;
 
 
 };

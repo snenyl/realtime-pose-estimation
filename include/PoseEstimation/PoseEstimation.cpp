@@ -60,7 +60,7 @@ void PoseEstimation::run_pose_estimation() {
   calculate_pose();
 
 
-  log_data();
+  log_data(image.get_frame_number());
   cv::imshow("Output",cv_image);
   cv::waitKey(1);
 
@@ -85,16 +85,12 @@ void PoseEstimation::setup_pose_estimation() {
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Standstill front
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag"; //Nice
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_161600_2meter_with_light_standing_aruco_2.bag";
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_161600_2meter_with_light_standing_aruco_2.bag";
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Nice
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag"; //Nice
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag"; //Nice
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162326_3meter_with_light_standing_aruco_4.bag"; //Nice - Used for data_out_3
 //
-  if (enable_logger_){
-    std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv");
-    LoggerFile << "p_x,p_y,p_z,p_r,p_p,p_y,a_x,a_y,a_z,a_r,a_p,a_y" << std::endl;
-    LoggerFile.close();
-  }
+
 
 
   if (load_from_rosbag){
@@ -102,11 +98,23 @@ void PoseEstimation::setup_pose_estimation() {
 //    p.stop(); // TODO(simon) check if stream is running. p.get_active_profile().get_device()
     rs2::config cfg;
     cfg.enable_device_from_file(rosbag_path_,!single_run_);
-    p.start(cfg);
-  }
+    auto profile = p.start(cfg);
+    auto dev = profile.get_device();
 
+    if (auto p = dev.as<rs2::playback>()){
+      p.set_real_time(0); //! Doesn't skip frames. :)
+    }
+
+  }
   else if (!load_from_rosbag){
     p.start();
+  }
+
+  if (enable_logger_){
+    std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv");
+    LoggerFile << "frame,p_x,p_y,p_z,p_r,p_p,p_y,a_x,a_y,a_z,a_r,a_p,a_y" << std::endl;
+    LoggerFile.close();
+
   }
 
 //  rs2_get_video_stream_intrinsics()
@@ -908,12 +916,11 @@ void PoseEstimation::calculate_rotation_units() {
 
 
 
-void PoseEstimation::log_data() {
-
-
+void PoseEstimation::log_data(uint32_t frame) {
   if (enable_logger_ && ransac_model_coefficients_.size() > 1 && tvecs_.size() >= 1 && rvecs_.size() >= 1){
     std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv", std::ios_base::app | std::ios_base::out);
-    LoggerFile << plane_frustum_vector_intersect_.x << ","
+    LoggerFile << frame << ","
+               << plane_frustum_vector_intersect_.x << ","
                << plane_frustum_vector_intersect_.y << ","
                << plane_frustum_vector_intersect_.z << ","
                << second_ransac_model_coefficients_.at(0) << ","
@@ -928,10 +935,9 @@ void PoseEstimation::log_data() {
                << std::endl;
     LoggerFile.close();
   }
-
   else {
     std::ofstream LoggerFile(std::filesystem::current_path().parent_path() / "log/data_out.csv", std::ios_base::app | std::ios_base::out);
-    LoggerFile << std::endl;
+    LoggerFile << frame <<std::endl;
     LoggerFile.close();
   }
 
