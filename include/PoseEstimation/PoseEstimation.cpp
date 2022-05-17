@@ -31,16 +31,16 @@ void PoseEstimation::run_pose_estimation() {
     std::cout << "cloud_pallet_->size(): " << cloud_pallet_->size() << std::endl;
   }
 
-  calculate_ransac(); //Debugging
+//  calculate_ransac(); //Debugging
 
-  if (ransac_model_coefficients_.size() > 3){
-    calculate_pose_vector();
-  }
 
   if (detection_output_struct_.width > 10  &&
       detection_output_struct_.height > 10 &&
       wait_with_ransac_for_ > 10){
-//    calculate_ransac();
+    calculate_ransac();
+  }
+  if (ransac_model_coefficients_.size() > 3){
+    calculate_pose_vector();
   }
   wait_with_ransac_for_ += 1;
 
@@ -82,14 +82,10 @@ void PoseEstimation::setup_pose_estimation() {
 //  std::cout << "config_path: " << config_path << std::endl;
 
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Standstill front
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/seafront/20220512_035816.bag"; //Standstill front
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag"; //Nice
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_161600_2meter_with_light_standing_aruco_2.bag";
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_161534_2meter_with_light_standing_aruco_0.bag"; //Nice
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag"; //Nice
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162326_3meter_with_light_standing_aruco_4.bag"; //Nice - Used for data_out_3
-//
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag";
 
 
 
@@ -174,7 +170,7 @@ void PoseEstimation::calculate_pose() {
     float rvecs_deg[3];
 
     for (int i = 0; i < 3; ++i) {
-      rvecs_deg[i] = rvecs.at(0)[i]*57.2958;
+      rvecs_deg[i] = rvecs.at(0)[i]*57.2958; // TODO(simon) rvecs is not in radians, it is a rotation vector.
     }
 
 //    rotation << rvecs.at(0);
