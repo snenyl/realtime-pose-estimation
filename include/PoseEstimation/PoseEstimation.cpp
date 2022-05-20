@@ -167,20 +167,14 @@ void PoseEstimation::calculate_pose() {
     rvecs_ = rvecs;
     tvecs_ = tvecs;
 
-    float rvecs_deg[3];
-
-    for (int i = 0; i < 3; ++i) {
-      rvecs_deg[i] = rvecs.at(0)[i]*57.2958; // TODO(simon) rvecs is not in radians, it is a rotation vector.
-    }
-
 //    rotation << rvecs.at(0);
-    rotation << "[" << rvecs_deg[0] << ", " << rvecs_deg[1] << ", " << rvecs_deg[2] << "]";
+    rotation << "[" << rvecs.at(0)[0] << ", " << rvecs.at(0)[1] << ", " << rvecs.at(0)[2] << "]";
     translation << tvecs.at(0);
 //    std::cout << rvecs.size() << "\n" << tvecs.size() << "\n" << object_points.size() << std::endl;
 //    std::cout << rvecs.at(0) << "\n" << tvecs.at(0) << std::endl;
     cv::putText(image_,rotation.str(),cv::Point(50,50),cv::FONT_HERSHEY_DUPLEX,1,cv::Scalar(0,255,0),2,false);
     cv::putText(image_,translation.str(),cv::Point(50,100),cv::FONT_HERSHEY_DUPLEX,1,cv::Scalar(0,255,0),2,false);
-    cv::aruco::drawAxis(image_,example_camera_matrix_,example_dist_coefficients_,rvecs,tvecs,0.1);
+    cv::aruco::drawAxis(image_,example_camera_matrix_,example_dist_coefficients_,rvecs,tvecs,0.535/2);
   }
 
 //  cv::aruco::drawAxis(image_,example_camera_matrix,example_dist_coefficients,rvecs,tvecs,0.1);
@@ -392,38 +386,18 @@ void PoseEstimation::view_pointcloud() {
 //    std::cout << "RVECS: " << rvecs_.at(0) << std::endl;
 //    std::cout << "TVECS: " << tvecs_.at(0) << std::endl;
 //    viewer_->addCoordinateSystem(0.535,0.128196, 0.0394752, 0.815717,"aruco_marker",0);
-    rot_trans_matrix_.matrix() << 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;
-    rotation.matrix() << 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;
+
+    pcl::PointXYZ startpoint = pcl::PointXYZ(tvecs_.at(0)[0],tvecs_.at(0)[1],tvecs_.at(0)[2]);
+//    pcl::PointXYZ endpoint = pcl::PointXYZ(tvecs_.at(0)[0]+rvecs_.at(0)[0],tvecs_.at(0)[1]+rvecs_.at(0)[1],tvecs_.at(0)[2]+rvecs_.at(0)[2]);
+    pcl::PointXYZ endpoint = pcl::PointXYZ(tvecs_.at(0)[0]+rvecs_.at(0)[2],
+                                           tvecs_.at(0)[1]-rvecs_.at(0)[1],
+                                           tvecs_.at(0)[2]+rvecs_.at(0)[0]);
+
+    viewer_->addLine(startpoint,
+                     endpoint,0,0,255,
+                     "ground_truth",0);
 
 
-    rot_trans_matrix_.translation()[0] = static_cast<float>(tvecs_.at(0)[0]);
-    rot_trans_matrix_.translation()[1] = static_cast<float>(tvecs_.at(0)[1]);
-    rot_trans_matrix_.translation()[2] = static_cast<float>(tvecs_.at(0)[2]);
-
-
-    rotation = create_rotation_matrix(rvecs_.at(0)[0],
-                                      rvecs_.at(0)[1],
-                                      rvecs_.at(0)[2]);
-
-//    std::cout << "\n A: " << rot_trans_matrix_.matrix() << "\n" << std::endl;
-//    std::cout << "\n B: " << rotation.matrix() << "\n" << std::endl;
-
-    rot_trans_matrix_.matrix() += rotation.matrix();
-
-//    std::cout << "\n" << rot_trans_matrix_.matrix() << "\n" << std::endl;
-
-
-
-
-
-//    rot_trans_matrix_.linear() = ( Eigen::AngleAxisd(3.1415 / 6, Eigen::Vector3d::UnitY()) *
-//                                   Eigen::AngleAxisd(3.1415 / 6, Eigen::Vector3d::UnitX()) ).toRotationMatrix();
-
-
-//    rot_trans_matrix.fromPositionOrientationScale((1,1,1),(1,1,1),(1,1,1));
-
-    viewer_->addCoordinateSystem(0.6,rot_trans_matrix_,"aruco_marker",0);
-//    viewer_->addCoordinateSystem(0.535,tvecs_.at(0)[0], tvecs_.at(0)[1], tvecs_.at(0)[2],"aruco_marker",0);
   }
 
   if (std::chrono::system_clock::now() > start_debug_time_){
@@ -925,9 +899,9 @@ void PoseEstimation::log_data(uint32_t frame) {
                << tvecs_.at(0)[0] << ","
                << tvecs_.at(0)[1] << ","
                << tvecs_.at(0)[2] << ","
-               << rvecs_.at(0)[0] * 57.2958 << ","
-               << rvecs_.at(0)[1] * 57.2958 << ","
-               << rvecs_.at(0)[2] * 57.2958
+               << rvecs_.at(0)[0] << ","
+               << rvecs_.at(0)[1] << ","
+               << rvecs_.at(0)[2]
                << std::endl;
     LoggerFile.close();
   }
