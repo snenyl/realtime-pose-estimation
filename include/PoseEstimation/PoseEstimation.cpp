@@ -119,7 +119,7 @@ void PoseEstimation::setup_pose_estimation() {
 
 //  object_detection_object_.set_model_path("models/yolox_s_only_pallet_void_300epoch_o10/yolox_s_only_pallet_void_300epoch_lim_o10.xml");
   object_detection_object_.set_model_path("models/yolox_s_only_pallet_294epoch_o10/yolox_s_only_pallet_294epoch_o10.xml");
-  object_detection_object_.set_object_detection_settings(0.45,0.75);
+  object_detection_object_.set_object_detection_settings(0.3,0.1); //! Får med hele sekvensen: 0.3,0.1 | 0.3,0.75
   object_detection_object_.setup_object_detection();
   pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
   viewer_ = viewer;
@@ -132,6 +132,8 @@ void PoseEstimation::setup_pose_estimation() {
 void PoseEstimation::calculate_aruco() {
 
   cv::aruco::detectMarkers(image_, dictionary_, markerCorners_, markerIds_, parameters_, rejectedCandidates_);
+
+//  cv::aruco::CornerRefineMethod::CORNER_REFINE_APRILTAG
 
 
   if (markerCorners_.size() > 0){
@@ -388,10 +390,16 @@ void PoseEstimation::view_pointcloud() {
 //    viewer_->addCoordinateSystem(0.535,0.128196, 0.0394752, 0.815717,"aruco_marker",0);
 
     pcl::PointXYZ startpoint = pcl::PointXYZ(tvecs_.at(0)[0],tvecs_.at(0)[1],tvecs_.at(0)[2]);
+//    pcl::PointXYZ startpoint = pcl::PointXYZ(0,0,0);
 //    pcl::PointXYZ endpoint = pcl::PointXYZ(tvecs_.at(0)[0]+rvecs_.at(0)[0],tvecs_.at(0)[1]+rvecs_.at(0)[1],tvecs_.at(0)[2]+rvecs_.at(0)[2]);
-    pcl::PointXYZ endpoint = pcl::PointXYZ(tvecs_.at(0)[0]+rvecs_.at(0)[2],
+    pcl::PointXYZ endpoint = pcl::PointXYZ(tvecs_.at(0)[0]+rvecs_.at(0)[2], //TODO(simon) Testing remove "*2" Justering er ikke linjær
                                            tvecs_.at(0)[1]-rvecs_.at(0)[1],
-                                           tvecs_.at(0)[2]+rvecs_.at(0)[0]);
+                                           tvecs_.at(0)[2]-rvecs_.at(0)[0]); // TODO(simon) Testing remove "-1.75"
+//    pcl::PointXYZ endpoint = pcl::PointXYZ(rvecs_.at(0)[0],
+//                                           rvecs_.at(0)[1],
+//                                           rvecs_.at(0)[2]);
+
+    std::cout << "ENDPOINT: " << endpoint << std::endl;
 
     viewer_->addLine(startpoint,
                      endpoint,0,0,255,
