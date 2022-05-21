@@ -91,6 +91,8 @@ class PoseEstimation {
   Eigen::Affine3f rot_trans_matrix_;
   Eigen::Affine3f create_rotation_matrix(float ax, float ay, float az);
 
+  cv::Mat ground_truth_vector_;
+
   //! Object detection
   ObjectDetection object_detection_object_;
   ObjectDetection pallet_void_object_detection_object_;

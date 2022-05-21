@@ -158,6 +158,20 @@ void PoseEstimation::calculate_pose() {
   cv::aruco::estimatePoseSingleMarkers(markerCorners_,0.535,example_camera_matrix_,example_dist_coefficients_,rvecs,tvecs,object_points);
   // TODO(simon) Set marker size as parameter. 0.175 0.535
 
+  if (!rvecs.empty() && !tvecs.empty()){
+    double z_axis_data[3] = {0,0,1};
+    cv::Mat Rot(3,3,CV_64F),Jacob;
+    cv::Mat z_axis(1,3,CV_64F,z_axis_data);
+    cv::Rodrigues(rvecs, Rot, Jacob);
+
+
+    std::cout << "z_axis: " << z_axis << std::endl;
+    std::cout << "Rot: " << Rot << std::endl;
+
+    ground_truth_vector_ = z_axis*Rot;
+  }
+
+
 //  std::cout << rvecs.size() << "\n" << tvecs.size() << "\n" << object_points.size() << std::endl;
 //  std::cout << rvecs.at(0) << "\n" << tvecs.at(0) << std::endl;
 
