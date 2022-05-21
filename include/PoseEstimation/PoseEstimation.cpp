@@ -406,9 +406,11 @@ void PoseEstimation::view_pointcloud() {
     pcl::PointXYZ startpoint = pcl::PointXYZ(tvecs_.at(0)[0],tvecs_.at(0)[1],tvecs_.at(0)[2]);
 //    pcl::PointXYZ startpoint = pcl::PointXYZ(0,0,0);
 //    pcl::PointXYZ endpoint = pcl::PointXYZ(tvecs_.at(0)[0]+rvecs_.at(0)[0],tvecs_.at(0)[1]+rvecs_.at(0)[1],tvecs_.at(0)[2]+rvecs_.at(0)[2]);
-    pcl::PointXYZ endpoint = pcl::PointXYZ(tvecs_.at(0)[0]+rvecs_.at(0)[2], //TODO(simon) Testing remove "*2" Justering er ikke linjær
-                                           tvecs_.at(0)[1]-rvecs_.at(0)[1],
-                                           tvecs_.at(0)[2]-rvecs_.at(0)[0]); // TODO(simon) Testing remove "-1.75"
+    std::vector<double>ground_truth_vector_converted(ground_truth_vector_.begin<double>(), ground_truth_vector_.end<double>());
+
+    pcl::PointXYZ endpoint = pcl::PointXYZ(tvecs_.at(0)[0]+ground_truth_vector_converted.at(0), //TODO(simon) Testing remove "*2" Justering er ikke linjær
+                                           tvecs_.at(0)[1]-ground_truth_vector_converted.at(1),
+                                           tvecs_.at(0)[2]+ground_truth_vector_converted.at(2)); // TODO(simon) Testing remove "-1.75"
 //    pcl::PointXYZ endpoint = pcl::PointXYZ(rvecs_.at(0)[0],
 //                                           rvecs_.at(0)[1],
 //                                           rvecs_.at(0)[2]);
