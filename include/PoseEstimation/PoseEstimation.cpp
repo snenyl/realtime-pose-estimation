@@ -411,9 +411,18 @@ void PoseEstimation::view_pointcloud() {
     pcl::PointXYZ endpoint = pcl::PointXYZ(tvecs_.at(0)[0]-ground_truth_vector_converted.at(0), //TODO(simon) Testing remove "*2" Justering er ikke linjær
                                            tvecs_.at(0)[1]+ground_truth_vector_converted.at(1),
                                            tvecs_.at(0)[2]-ground_truth_vector_converted.at(2)); // TODO(simon) Testing remove "-1.75"
-//    pcl::PointXYZ endpoint = pcl::PointXYZ(rvecs_.at(0)[0],
-//                                           rvecs_.at(0)[1],
-//                                           rvecs_.at(0)[2]);
+
+
+    converted_ground_truth_vector_.at(0) = tvecs_.at(0)[0];
+    converted_ground_truth_vector_.at(1) = tvecs_.at(0)[1];
+    converted_ground_truth_vector_.at(2) = tvecs_.at(0)[2];
+    converted_ground_truth_vector_.at(3) = -ground_truth_vector_converted.at(0);
+    converted_ground_truth_vector_.at(4) = ground_truth_vector_converted.at(1);
+    converted_ground_truth_vector_.at(5) = -ground_truth_vector_converted.at(2);
+
+    for (int i = 0; i < converted_ground_truth_vector_.size(); ++i) {
+      std::cout << "converted_ground_truth_vector_.at("<<i<<")" << converted_ground_truth_vector_.at(i) << std::endl;
+    }
 
     std::cout << "ENDPOINT: " << endpoint << std::endl;
 
@@ -920,12 +929,12 @@ void PoseEstimation::log_data(uint32_t frame) {
                << second_ransac_model_coefficients_.at(0) << ","
                << (-1*first_ransac_model_coefficients_.at(2)) << ","
                << second_ransac_model_coefficients_.at(2) << ","
-               << tvecs_.at(0)[0] << ","
-               << tvecs_.at(0)[1] << ","
-               << tvecs_.at(0)[2] << ","
-               << rvecs_.at(0)[0] << ","
-               << rvecs_.at(0)[1] << ","
-               << rvecs_.at(0)[2]
+               << converted_ground_truth_vector_.at(0) << ","
+               << converted_ground_truth_vector_.at(1) << ","
+               << converted_ground_truth_vector_.at(2) << ","
+               << converted_ground_truth_vector_.at(3) << ","
+               << converted_ground_truth_vector_.at(4) << ","
+               << converted_ground_truth_vector_.at(5)
                << std::endl;
     LoggerFile.close();
   }

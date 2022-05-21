@@ -93,6 +93,8 @@ class PoseEstimation {
 
   cv::Mat ground_truth_vector_;
 
+  std::vector<double> converted_ground_truth_vector_ = {0,0,0,0,0,0};
+
   //! Object detection
   ObjectDetection object_detection_object_;
   ObjectDetection pallet_void_object_detection_object_;
