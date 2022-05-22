@@ -394,7 +394,7 @@ object_detection_output ObjectDetection::get_detection() {
 //        max_areal = detection_output_struct_.at(i).y + detection_output_struct_.at(i).height; // TODO(simon) Select for lowest detected position
 //        iterator_max_confidence = i;
 //      }
-      if (detection_output_struct_.at(i).x + (detection_output_struct_.at(i).width/2)>image_width/2){
+      if (detection_output_struct_.at(i).x + (detection_output_struct_.at(i).width/2)>image_width/2){ //TODO(simon) These are tuning factor for selecting the corrent pallet.
         std::cout << "tPallet: " << i << std::endl;
         if (box_filtering(image_width,image_height,detection_output_struct_,false,i)>max_areal){
           max_areal = box_filtering(image_width,image_height,detection_output_struct_,false,i);
@@ -427,7 +427,7 @@ void ObjectDetection::set_object_detection_settings(float nms_threshold,
   nms_threshold_ = nms_threshold; // Default 0.45
   bbox_conf_threshold_ = bbox_conf_threshold; // Default 0.25 or 0.75
 }
-double ObjectDetection::box_filtering(double image_width,
+double ObjectDetection::box_filtering(double image_width, //TODO(simon) Filtering of selecting the middle most down box
                                       double image_height,
                                       std::vector<object_detection_output> detection,
                                       bool left_side_of_image,
