@@ -66,7 +66,6 @@ class ObjectDetection {
   double box_filtering(double image_width,
                        double image_height,
                        std::vector<object_detection_output> detection,
-                       bool left_side_of_image,
                        uint16_t i);
 
   //! Settings

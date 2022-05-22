@@ -83,7 +83,7 @@ void PoseEstimation::setup_pose_estimation() {
 
 
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_161534_2meter_with_light_standing_aruco_0.bag";
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162643_3meter_with_light_standing_aruco_90_deg_slow_move.bag";
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag";
 
 
 
