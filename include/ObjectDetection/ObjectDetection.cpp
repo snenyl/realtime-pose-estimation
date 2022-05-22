@@ -432,16 +432,12 @@ double ObjectDetection::box_filtering(double image_width, //TODO(simon) Filterin
 
   height_fraction_score = bbox_center_bottom.at(1)/image_height;
 
-
-  switch (bbox_center_bottom.at(0)>image_width/2) {
-    case true: //! Right side of image
-      width_fraction_score = 1-((bbox_center_bottom.at(0)-(image_width/2))/(image_width/2));
-
-    case false: //! Left side of image
-      width_fraction_score = bbox_center_bottom.at(0)/(image_width/2);
+  if (bbox_center_bottom.at(0)>image_width/2){//! Right side of image
+    width_fraction_score = 1-((bbox_center_bottom.at(0)-(image_width/2))/(image_width/2));
   }
-
-
+  else{//! Left side of image
+    width_fraction_score = bbox_center_bottom.at(0)/(image_width/2);
+  }
 
   return height_fraction_score*width_fraction_score;
 }
