@@ -424,7 +424,7 @@ double ObjectDetection::box_filtering(double image_width, //TODO(simon) Filterin
                                       uint16_t i) {
   double height_fraction_score = 0;
   double width_fraction_score = 0;
-  double center_fraction_bias = 0; //! max 1 extra, thus selecting only the center.
+  double width_fraction_bias = 0.2; //! Added constant
 
   std::vector<double> bbox_center_bottom = {static_cast<double>(detection_output_struct_.at(i).x)+
                                             static_cast<double>(detection_output_struct_.at(i).width)/2,
@@ -440,8 +440,7 @@ double ObjectDetection::box_filtering(double image_width, //TODO(simon) Filterin
     width_fraction_score = bbox_center_bottom.at(0)/(image_width/2);
   }
 
-//  width_fraction_score = width_fraction_score*(width_fraction_score*center_fraction_bias);
-//  height_fraction_score = height_fraction_score/(height_fraction_score*center_fraction_bias);
+  width_fraction_score=width_fraction_score+width_fraction_bias;
 
   return height_fraction_score+width_fraction_score;
 }
