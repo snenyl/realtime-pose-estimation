@@ -641,38 +641,32 @@ void PoseEstimation::calculate_ransac() {
   seg.setMaxIterations(50);
   seg.setDistanceThreshold (0.001);
 
-  seg.setInputCloud (cloud_pallet_);
-  seg.segment (*first_inliers, *first_coefficients);
+  std::cout << "First RANSAC" << std::endl;
+  std::cout << "cloud_pallet_ size: " << cloud_pallet_->size() << std::endl;
+
+  if (cloud_pallet_->size()>10){ //TODO(simon) 10 should be set as input parameter.
+    seg.setInputCloud (cloud_pallet_);
+    seg.segment (*first_inliers, *first_coefficients);
 
 
-  first_ransac_model_coefficients_.clear();
-  for (int i = 0; i < first_coefficients->values.size(); ++i) {
-    first_ransac_model_coefficients_.emplace_back(first_coefficients->values.at(i));
+    first_ransac_model_coefficients_.clear();
+    for (int i = 0; i < first_coefficients->values.size(); ++i) {
+      first_ransac_model_coefficients_.emplace_back(first_coefficients->values.at(i));
+    }
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr final (new pcl::PointCloud<pcl::PointXYZ>);
+    std::vector<int> test_inliers;
+    pcl::SampleConsensusModelPlane<pcl::PointXYZ>::Ptr
+        model_p (new pcl::SampleConsensusModelPlane<pcl::PointXYZ> (cloud_pallet_));
+
+    pcl::RandomSampleConsensus<pcl::PointXYZ> ransac (model_p);
+    ransac.setDistanceThreshold (0.0001);
+    ransac.computeModel();
+    ransac.getInliers(test_inliers);
+
+    pcl::copyPointCloud (*cloud_pallet_, test_inliers, *final);
+    final_ = final;
   }
-
-  pcl::PointCloud<pcl::PointXYZ>::Ptr final (new pcl::PointCloud<pcl::PointXYZ>);
-  std::vector<int> test_inliers;
-  pcl::SampleConsensusModelPlane<pcl::PointXYZ>::Ptr
-      model_p (new pcl::SampleConsensusModelPlane<pcl::PointXYZ> (cloud_pallet_));
-
-  pcl::RandomSampleConsensus<pcl::PointXYZ> ransac (model_p);
-  ransac.setDistanceThreshold (0.0001);
-  ransac.computeModel();
-  ransac.getInliers(test_inliers);
-
-  std::cerr << "test_inliers : " << test_inliers.size() << std::endl;
-
-  pcl::copyPointCloud (*cloud_pallet_, test_inliers, *final);
-  final_ = final;
-
-
-
-
-
-
-
-
-
 
 
   pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
@@ -696,83 +690,105 @@ void PoseEstimation::calculate_ransac() {
     input_cloud_with_normals->points.at(i).z = cloud_pallet_->at(i).z;
   }
 
+  std::cout << "Sampling surface normals" << std::endl;
+  std::cout << "input_cloud_with_normals size: " << input_cloud_with_normals->size() << std::endl;
+
 //  //Sampling surface normals
-  pcl::SamplingSurfaceNormal<pcl::PointNormal> sample_surface_normal;
-  sample_surface_normal.setInputCloud(input_cloud_with_normals);
-  sample_surface_normal.setSample(50); // TODO(simon) Setting that is required to be a parameter.
-  sample_surface_normal.setRatio(0.5); // TODO(simon) Setting that is required to be a parameter.
-  sample_surface_normal.filter(*output_cloud_with_normals);
+  if (input_cloud_with_normals->size()>10){ //TODO(simon) 10 should be set as input parameter.
+    pcl::SamplingSurfaceNormal<pcl::PointNormal> sample_surface_normal;
+    sample_surface_normal.setInputCloud(input_cloud_with_normals);
+    sample_surface_normal.setSample(50); // TODO(simon) Setting that is required to be a parameter.
+    sample_surface_normal.setRatio(0.5); // TODO(simon) Setting that is required to be a parameter.
+    sample_surface_normal.filter(*output_cloud_with_normals);
 
-  output_cloud_with_normals_ = output_cloud_with_normals;
-  final_with_normals_ = final_with_normals;
+    output_cloud_with_normals_ = output_cloud_with_normals;
+    final_with_normals_ = final_with_normals;
 
-  std::vector<int> temp_index;
-  pcl::removeNaNNormalsFromPointCloud(*output_cloud_with_normals_,*output_cloud_with_normals_,temp_index);
+    std::vector<int> temp_index;
+    pcl::removeNaNNormalsFromPointCloud(*output_cloud_with_normals_,*output_cloud_with_normals_,temp_index);
 
-  int counter = 0;
+    int counter = 0;
 
-  for (int i = 0; i < output_cloud_with_normals_->size(); ++i) {
-    if (abs(output_cloud_with_normals_->at(i).normal_y)<0.45 && //! Default 0.45 or 0.10
-        abs(output_cloud_with_normals_->at(i).x)>0.2 &&  //! Remove vector at origo.
-        abs(output_cloud_with_normals_->at(i).y)>0.2 && //! Remove vector at origo.
-        abs(output_cloud_with_normals_->at(i).z)>0.2) //! Remove vector at origo.
-    {
-      final_with_normals_->emplace_back(output_cloud_with_normals_->at(i));
-      counter++;
+    for (int i = 0; i < output_cloud_with_normals_->size(); ++i) {
+      if (abs(output_cloud_with_normals_->at(i).normal_y)<0.45 && //! Default 0.45 or 0.10
+          abs(output_cloud_with_normals_->at(i).x)>0.2 &&  //! Remove vector at origo.
+          abs(output_cloud_with_normals_->at(i).y)>0.2 && //! Remove vector at origo.
+          abs(output_cloud_with_normals_->at(i).z)>0.2) //! Remove vector at origo.
+      {
+        final_with_normals_->emplace_back(output_cloud_with_normals_->at(i));
+        counter++;
+      }
     }
   }
 
+
   // RANSAC
-  pcl::SACSegmentationFromNormals<pcl::PointNormal,pcl::PointNormal> segmentation;
-  pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+  if (input_cloud_with_normals->size()>10){ //TODO(simon) 10 should be set as input parameter.
+    pcl::SACSegmentationFromNormals<pcl::PointNormal,pcl::PointNormal> segmentation;
+    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 
-  segmentation.setOptimizeCoefficients(true);
-  segmentation.setModelType(pcl::SACMODEL_NORMAL_PLANE); // TODO(simon) Test with different models SACMODEL_PLANE | SACMODEL_NORMAL_PLANE | SACMODEL_PERPENDICULAR_PLANE
-  segmentation.setMethodType(pcl::SAC_RANSAC);
-  segmentation.setMaxIterations(500);
-  segmentation.setDistanceThreshold(0.1);
+    segmentation.setOptimizeCoefficients(true);
+    segmentation.setModelType(pcl::SACMODEL_NORMAL_PLANE); // TODO(simon) Test with different models SACMODEL_PLANE | SACMODEL_NORMAL_PLANE | SACMODEL_PERPENDICULAR_PLANE
+    segmentation.setMethodType(pcl::SAC_RANSAC);
+    segmentation.setMaxIterations(500);
+    segmentation.setDistanceThreshold(0.1);
 
-  segmentation.setEpsAngle(0.1);
-  segmentation.setInputCloud(output_cloud_with_normals_);
-  segmentation.setInputNormals(output_cloud_with_normals_);
+    std::cout << "Inbetween " << std::endl;
+    std::cout << "input_cloud_with_normals size: " << input_cloud_with_normals->size() << std::endl;
 
-  segmentation.segment (*inliers, *coefficients);
+    segmentation.setEpsAngle(0.1);
+    segmentation.setInputCloud(output_cloud_with_normals_);
+    segmentation.setInputNormals(output_cloud_with_normals_);
 
-  ransac_model_coefficients_.clear();
-  for (int i = 0; i < coefficients->values.size(); ++i) {
-    ransac_model_coefficients_.emplace_back(coefficients->values.at(i));
+    segmentation.segment (*inliers, *coefficients);
+
+    ransac_model_coefficients_.clear();
+    for (int i = 0; i < coefficients->values.size(); ++i) {
+      ransac_model_coefficients_.emplace_back(coefficients->values.at(i));
+    }
   }
 
-  pcl::PointCloud<pcl::PointNormal>::Ptr extracted_cloud_with_normals(new pcl::PointCloud<pcl::PointNormal>);
-  //Extract all points
-  pcl::ExtractIndices<pcl::PointNormal> extract_filter;
-  extract_filter.setInputCloud(output_cloud_with_normals_);
-  extract_filter.setNegative(true);
-  extract_filter.setIndices(inliers);
-  extract_filter.filter(*extracted_cloud_with_normals);
 
-  extracted_cloud_with_normals_ = extracted_cloud_with_normals;
+  // Extract filter
+
+  if (output_cloud_with_normals_->size()>10){ //TODO(simon) 10 should be set as input parameter.
+    pcl::PointCloud<pcl::PointNormal>::Ptr extracted_cloud_with_normals(new pcl::PointCloud<pcl::PointNormal>);
+    //Extract all points
+    pcl::ExtractIndices<pcl::PointNormal> extract_filter;
+    extract_filter.setInputCloud(output_cloud_with_normals_);
+    extract_filter.setNegative(true);
+    extract_filter.setIndices(inliers);
+    extract_filter.filter(*extracted_cloud_with_normals);
+
+    extracted_cloud_with_normals_ = extracted_cloud_with_normals;
+  }
 
   // RANSAC 2
-  pcl::SACSegmentationFromNormals<pcl::PointNormal,pcl::PointNormal> second_segmentation;
-  pcl::ModelCoefficients::Ptr second_coefficients (new pcl::ModelCoefficients);
-  pcl::PointIndices::Ptr second_inliers (new pcl::PointIndices);
 
-  second_segmentation.setOptimizeCoefficients(true);
-  second_segmentation.setModelType(pcl::SACMODEL_NORMAL_PLANE); // TODO(simon) Test with different models SACMODEL_PLANE | SACMODEL_NORMAL_PLANE | SACMODEL_PERPENDICULAR_PLANE
-  second_segmentation.setMethodType(pcl::SAC_RANSAC);
-  second_segmentation.setMaxIterations(500);
-  second_segmentation.setDistanceThreshold(0.1);
+  if (extracted_cloud_with_normals_->size()>10){ //TODO(simon) 10 should be set as input parameter.
+    pcl::SACSegmentationFromNormals<pcl::PointNormal,pcl::PointNormal> second_segmentation;
+    pcl::ModelCoefficients::Ptr second_coefficients (new pcl::ModelCoefficients);
+    pcl::PointIndices::Ptr second_inliers (new pcl::PointIndices);
 
-  second_segmentation.setEpsAngle(0.1);
-  second_segmentation.setInputCloud(extracted_cloud_with_normals_);
-  second_segmentation.setInputNormals(extracted_cloud_with_normals_);
+    second_segmentation.setOptimizeCoefficients(true);
+    second_segmentation.setModelType(pcl::SACMODEL_NORMAL_PLANE); // TODO(simon) Test with different models SACMODEL_PLANE | SACMODEL_NORMAL_PLANE | SACMODEL_PERPENDICULAR_PLANE
+    second_segmentation.setMethodType(pcl::SAC_RANSAC);
+    second_segmentation.setMaxIterations(500);
+    second_segmentation.setDistanceThreshold(0.1);
 
-  second_segmentation.segment (*second_inliers, *second_coefficients);
+    std::cout << "second_segmentation " << std::endl;
+    std::cout << "extracted_cloud_with_normals_ size: " << extracted_cloud_with_normals_->size() << std::endl;
 
-  second_ransac_model_coefficients_.clear();
-  for (int i = 0; i < second_coefficients->values.size(); ++i) {
-    second_ransac_model_coefficients_.emplace_back(second_coefficients->values.at(i));
+    second_segmentation.setEpsAngle(0.1);
+    second_segmentation.setInputCloud(extracted_cloud_with_normals_);
+    second_segmentation.setInputNormals(extracted_cloud_with_normals_);
+
+    second_segmentation.segment (*second_inliers, *second_coefficients);
+
+    second_ransac_model_coefficients_.clear();
+    for (int i = 0; i < second_coefficients->values.size(); ++i) {
+      second_ransac_model_coefficients_.emplace_back(second_coefficients->values.at(i));
+    }
   }
 
   inliers_ = inliers;
