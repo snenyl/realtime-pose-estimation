@@ -81,11 +81,9 @@ void PoseEstimation::setup_pose_estimation() {
 //
 //  std::cout << "config_path: " << config_path << std::endl;
 
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646.bag"; // new 9GB
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/seafront/20220512_035816.bag"; //Standstill front
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220319_112823.bag"; //Nice
-//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag"; //Nice
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag";
+
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_161534_2meter_with_light_standing_aruco_0.bag";
+//  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag";
 
 
 
