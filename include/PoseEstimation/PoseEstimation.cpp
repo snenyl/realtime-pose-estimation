@@ -641,23 +641,12 @@ void PoseEstimation::calculate_ransac() {
   seg.setMaxIterations(50);
   seg.setDistanceThreshold (0.001);
 
-//  Eigen::Vector3f y_axis = Eigen::Vector3f(0.0,0.0,1.0);
-//  seg.setAxis(y_axis);
-//  seg.setEpsAngle(0.5);
-
   seg.setInputCloud (cloud_pallet_);
   seg.segment (*first_inliers, *first_coefficients);
 
-  std::cout << "First model coefficients: " << first_coefficients->values[0] << " "
-            << first_coefficients->values[1] << " "
-            << first_coefficients->values[2] << " "
-            << first_coefficients->values[3] << std::endl;
-
-  std::cerr << "First model inliers: " << first_inliers->indices.size () << std::endl;
 
   first_ransac_model_coefficients_.clear();
   for (int i = 0; i < first_coefficients->values.size(); ++i) {
-    std::cout << "ransac.first_ransac_model_coefficients_: " << first_coefficients->values.at(i) << std::endl;
     first_ransac_model_coefficients_.emplace_back(first_coefficients->values.at(i));
   }
 
@@ -707,17 +696,12 @@ void PoseEstimation::calculate_ransac() {
     input_cloud_with_normals->points.at(i).z = cloud_pallet_->at(i).z;
   }
 
-//  std::cout << "input_cloud_with_normals size: " << input_cloud_with_normals->size() << std::endl;
-
 //  //Sampling surface normals
   pcl::SamplingSurfaceNormal<pcl::PointNormal> sample_surface_normal;
   sample_surface_normal.setInputCloud(input_cloud_with_normals);
   sample_surface_normal.setSample(50); // TODO(simon) Setting that is required to be a parameter.
   sample_surface_normal.setRatio(0.5); // TODO(simon) Setting that is required to be a parameter.
   sample_surface_normal.filter(*output_cloud_with_normals);
-
-//  std::cout << "Calculating RANSAC" << std::endl;
-//  std::cout << output_cloud_with_normals->size() << std::endl;
 
   output_cloud_with_normals_ = output_cloud_with_normals;
   final_with_normals_ = final_with_normals;
@@ -738,8 +722,6 @@ void PoseEstimation::calculate_ransac() {
     }
   }
 
-  std::cout << "counter: " << counter << std::endl;
-
   // RANSAC
   pcl::SACSegmentationFromNormals<pcl::PointNormal,pcl::PointNormal> segmentation;
   pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
@@ -756,16 +738,10 @@ void PoseEstimation::calculate_ransac() {
 
   segmentation.segment (*inliers, *coefficients);
 
-
-
-
   ransac_model_coefficients_.clear();
-  std::cout << "inlines: " << inliers->indices.size() << std::endl;
   for (int i = 0; i < coefficients->values.size(); ++i) {
-    std::cout << "ransac.model_coefficients: " << coefficients->values.at(i) << std::endl;
     ransac_model_coefficients_.emplace_back(coefficients->values.at(i));
   }
-
 
   pcl::PointCloud<pcl::PointNormal>::Ptr extracted_cloud_with_normals(new pcl::PointCloud<pcl::PointNormal>);
   //Extract all points
@@ -775,9 +751,7 @@ void PoseEstimation::calculate_ransac() {
   extract_filter.setIndices(inliers);
   extract_filter.filter(*extracted_cloud_with_normals);
 
-  std::cout << "extracted_cloud_with_normals size: " << extracted_cloud_with_normals->points.size() << std::endl;
   extracted_cloud_with_normals_ = extracted_cloud_with_normals;
-
 
   // RANSAC 2
   pcl::SACSegmentationFromNormals<pcl::PointNormal,pcl::PointNormal> second_segmentation;
@@ -797,44 +771,9 @@ void PoseEstimation::calculate_ransac() {
   second_segmentation.segment (*second_inliers, *second_coefficients);
 
   second_ransac_model_coefficients_.clear();
-  std::cout << "second_inliers: " << second_inliers->indices.size() << std::endl;
   for (int i = 0; i < second_coefficients->values.size(); ++i) {
-    std::cout << "ransac.second_model_coefficients: " << second_coefficients->values.at(i) << std::endl;
     second_ransac_model_coefficients_.emplace_back(second_coefficients->values.at(i));
   }
-
-
-//  std::cout << "getDistanceFromOrigin: " << segmentation.di() << std::endl;
-
-
-
-//  pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ>::Ptr
-//      model_p (new pcl::SampleConsensusModelPerpendicularPlane<pcl::PointXYZ> (cloud_ptr_)); // cloud_ptr_ | cloud_pallet_
-//
-//  model_p->setAxis(Eigen::Vector3f(0.0,0.0,1.0)); // TODO(simon) ZED: (0.0,0.0,1.0) Realsense: (0.0,1.0,0.0)
-//  model_p->setEpsAngle(0.5); // TODO(simon) Default 0.5
-//
-//  pcl::RandomSampleConsensus<pcl::PointXYZ> ransac (model_p);
-//  ransac.setDistanceThreshold (0.01); // TODO(simon) Default 0.01
-//  ransac.computeModel();
-//  ransac.getInliers(inliers);
-//
-//
-//
-//
-//  double a = ransac.model_coefficients_[0]/ransac.model_coefficients_[3];
-//  double b = ransac.model_coefficients_[1]/ransac.model_coefficients_[3];
-//  double c = ransac.model_coefficients_[2]/ransac.model_coefficients_[3];
-//
-//
-////  std::cout << "Model: "<< a << "X+"<< b << "Y+"<< c << "Z" << std::endl;
-////  pcl::copyPointCloud (*cloud_ptr_, inliers, *cloud_ptr_);
-//
-//  for (int i = 0; i < 4; ++i) {
-//    ransac_model_coefficients_.push_back(ransac.model_coefficients_[i]);
-//  }
-//
-//
 
   inliers_ = inliers;
 }
