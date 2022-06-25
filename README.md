@@ -35,7 +35,14 @@ with the pose estimation in C++. [Table 1](#table_1) present the YOLOX-S trainin
 <figcaption align = "center"><b> <a name="table_1">Table 1:</a> Training results for only pallet's from the LOCO dataset, trained on an NVIDIA GeForce RTX 3060 Laptop GPU.</b></figcaption>
 </center>
 
+<div align="center">
 
+[<img src="assets/unreal_synthetic_pallet.png" width="80%">](https://youtu.be/XEYaCEHEH3g)
+<figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Synthetic pallet detection test in Unreal Engine.</b></figcaption>
+
+&nbsp;
+
+</div>
 
 ## Pose Estimation
 The pose estimation is performed using the object detection algorithm and point cloud data. The object detection is only
@@ -47,7 +54,7 @@ While the pallet orientation is directly from the estimated from the front plane
 <div align="center">
 
 [<img src="assets/3d_explain.png" width="80%"> ](#figure_2)
-<figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Vector and point explanation from the PCL 3D viewer.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_3">Figure 3:</a> Vector and point explanation from the PCL 3D viewer.</b></figcaption>
 
 &nbsp;
 
@@ -58,7 +65,7 @@ While the pallet orientation is directly from the estimated from the front plane
 <div align="center">
 
 [<img src="assets/april_tag_test_moving_thumbnail.png" width="80%"> ](https://youtu.be/BfEB9jjqpF0)
-<figcaption align = "center"><b><a name="figure_3">Figure 3:</a> Moving test evaluated with an AprilTag.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_4">Figure 4:</a> Moving test evaluated with an AprilTag.</b></figcaption>
 
 &nbsp;
 
@@ -67,7 +74,7 @@ While the pallet orientation is directly from the estimated from the front plane
 
 
 [<img src="assets/april_tag_test_thumbnail.png" width="80%">](https://youtu.be/-xybFGRdweY)
-<figcaption align = "center"><b><a name="figure_4">Figure 4:</a> Standstill test evaluated with an AprilTag.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_5">Figure 5:</a> Standstill test evaluated with an AprilTag.</b></figcaption>
 
 
 [//]: # (<figcaption align = "center"><b>Figure 3: Realtime pose estimation standstill.</b></figcaption>)
