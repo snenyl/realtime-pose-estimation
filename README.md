@@ -9,7 +9,7 @@ This is part of the master’s thesis: "_A Machine Learning and Point Cloud Proc
 and Pose Estimation: Design, Implementation, and Validation_", available at [Link to thesis].
 
 By combining an RGB image and point cloud data is the system capable of detecting the object's pose by using object detection,
-RANSAC and linear algebra. 
+RANSAC and vector operations. 
 
 ## Demo video
 
@@ -53,7 +53,7 @@ While the pallet orientation is directly from the estimated from the front plane
 <h4>Moving test:</h4>
 
 
-[<img src="assets/april_tag_test_thumbnail.png" width="80%"> ](https://youtu.be/BfEB9jjqpF0)
+[<img src="assets/april_tag_test_moving_thumbnail.png" width="80%"> ](https://youtu.be/BfEB9jjqpF0)
 
 [//]: # (<figcaption align = "center"><b>Figure 2: Realtime pose estimation moving.</b></figcaption>)
 
