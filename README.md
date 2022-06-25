@@ -47,7 +47,10 @@ While the pallet orientation is directly from the estimated from the front plane
 <div align="center">
 
 <img src="assets/3d_explain.png" width="80%">
+&nbsp;
 <figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Vector and point explanation from the PCL 3D viewer.</b></figcaption>
+
+&nbsp;
 
 </div>
 
