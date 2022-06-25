@@ -49,7 +49,7 @@ While the pallet orientation is directly from the estimated from the front plane
 ### Evaluation Demo 
 
 
-<center> 
+<div align="center">
 <h4>Moving test:</h4>
 
 
@@ -64,7 +64,7 @@ While the pallet orientation is directly from the estimated from the front plane
 [<img src="assets/april_tag_test_thumbnail.png" width="80%">](https://youtu.be/-xybFGRdweY)
 
 [//]: # (<figcaption align = "center"><b>Figure 3: Realtime pose estimation standstill.</b></figcaption>)
-</center>
+</div>
 
 ## Future Work
 
