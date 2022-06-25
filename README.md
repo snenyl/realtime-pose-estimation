@@ -22,8 +22,8 @@ The
 
 ## Object Detection
 
-The object detection algorithm is the YOLOX-S model from the YOLOX repository, which is transfer learned on the 
-Logistics Objects in Context (LOCO) dataset. The final version is optimized with Intel OpenVINO and implemented together
+The object detection algorithm is the YOLOX-S model from the [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) repository, which is transfer learned on the 
+[Logistics Objects in Context (LOCO)](https://github.com/tum-fml/loco) dataset. The final version is optimized with Intel OpenVINO and implemented together
 with the pose estimation in C++. [Table 1](#table_1) present the training results for only pallet.
 
 <center>
@@ -37,6 +37,13 @@ with the pose estimation in C++. [Table 1](#table_1) present the training result
 
 
 ## Pose Estimation
+
+<object data="assets/overview_of_system_design.drawio.pdf" type="application/pdf" width="700px" height="700px">
+    <embed src="assets/overview_of_system_design.drawio.pdf">
+        <p>This browser does not support PDFs. Please download to view it: <a href="assets/overview_of_system_design.drawio.pdf">System overiew</a>.</p>
+    </embed>
+</object>
+
 
 The pose estimation is performed using the object detection algorithm and point cloud data. The object detection is only
 the relevant point of the pallet used where two RANSAC operations are performed. The first plane uses only ground floor 
