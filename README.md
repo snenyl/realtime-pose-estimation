@@ -20,14 +20,38 @@ and Pose Estimation: Design, Implementation, and Validation_", available at [Lin
 
 ## Object Detection
 
-The object detection algorithm is from the YOLOX.
+The object detection algorithm is from the YOLOX. [Cite yolox]
+The used dataset is from Logistics Objects in Context (LOCO) [cite ]
 
 Optimized with OpenVINO.
 
+Training results. 
+
 ## Pose Estimation
+
+### Demo 
+
+ <div style="width: 100%; overflow: hidden;">
+     <div style="width: 48%; float: left;">
+
+[<img src="assets/april_tag_test_thumbnail.png" width="100%">](https://youtu.be/BfEB9jjqpF0)
+<figcaption align = "center"><b>Figure 2: Realtime pose estimation moving.</b></figcaption>
+
+
+</div>
+     <div style="margin-left: 52%;"> 
+
+[<img src="assets/april_tag_test_thumbnail.png" width="100%">](https://youtu.be/-xybFGRdweY)
+<figcaption align = "center"><b>Figure 3: Realtime pose estimation standstill.</b></figcaption>
+
+
+</div>
+</div>
+
 
 ## Future Work
 
-- O
+- Improve the robustness of the system.
+- Find the pose without using the ground plane. 
 
 ## License
