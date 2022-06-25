@@ -3,7 +3,7 @@
 
 [//]: # (<img src="assets/logo.png" width="350">)
 
-## Introduction
+[//]: # (## Introduction)
 
 This is part of the master’s thesis: "_A Machine Learning and Point Cloud Processing based Approach for Object Detection 
 and Pose Estimation: Design, Implementation, and Validation_", available at [Link to thesis].
@@ -11,7 +11,7 @@ and Pose Estimation: Design, Implementation, and Validation_", available at [Lin
 By combining an RGB image and point cloud data is the system capable of detecting the object's pose by using object detection,
 RANSAC and vector operations. 
 
-## Demo video
+## Demo Video
 
 <div align="center">
 
@@ -46,8 +46,7 @@ While the pallet orientation is directly from the estimated from the front plane
 
 
 
-### Evaluation Demo 
-
+### Evaluation Demo
 
 <div align="center">
 <h4>Moving test:</h4>
@@ -59,17 +58,30 @@ While the pallet orientation is directly from the estimated from the front plane
 
 
 
-<h4>Standstill test:</h4>
+<h4>Standstill test #2:</h4>
 
 [<img src="assets/april_tag_test_thumbnail.png" width="80%">](https://youtu.be/-xybFGRdweY)
 
 [//]: # (<figcaption align = "center"><b>Figure 3: Realtime pose estimation standstill.</b></figcaption>)
 </div>
 
+## Requirements
+
+[//]: # (find_package&#40;realsense2 REQUIRED&#41;)
+
+[//]: # (find_package&#40;OpenCV REQUIRED&#41;)
+
+[//]: # (find_package&#40;InferenceEngine REQUIRED&#41;)
+
+[//]: # (find_package&#40;ngraph REQUIRED&#41;)
+
+[//]: # (find_package&#40;PCL REQUIRED &#41;)
+
 ## Future Work
 
 - Improve the robustness of the system by implementing more checks, so the system is capable of failing softly.
 - Find the pose using only the pallet front plane, thus increasing the range of the system. 
+- Detecting pallet holes.
 
 ## License
 

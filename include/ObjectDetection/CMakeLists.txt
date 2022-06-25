@@ -1,6 +1,6 @@
 add_library(object_detection
-            ObjectDetection.h
-            ObjectDetection.cc
+            ObjectDetection/ObjectDetection.h
+            ObjectDetection/ObjectDetection.cc
             )
 
 set_target_properties(object_detection PROPERTIES LINKER_LANGUAGE CXX)

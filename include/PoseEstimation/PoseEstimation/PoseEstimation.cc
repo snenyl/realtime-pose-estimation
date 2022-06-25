@@ -1,7 +1,7 @@
 // Copyright 2022 Simon Erik Nylund.
 // Author: snenyl
 
-#include "PoseEstimation.h"
+#include "PoseEstimation/PoseEstimation.h"
 
 void PoseEstimation::run_pose_estimation() {
   rs2::frameset frames = p.wait_for_frames();
@@ -23,15 +23,11 @@ void PoseEstimation::run_pose_estimation() {
   }
 
   calculate_3d_crop();
-
   edit_pointcloud();
 
   if (std::chrono::system_clock::now() > start_debug_time_){
     std::cout << "cloud_pallet_->size(): " << cloud_pallet_->size() << std::endl;
   }
-
-//  calculate_ransac(); //Debugging
-
 
   if (detection_output_struct_.width > 10  &&  // TODO(simon) Magic number.
       detection_output_struct_.height > 10 &&  // TODO(simon) Magic number.
@@ -44,7 +40,6 @@ void PoseEstimation::run_pose_estimation() {
   wait_with_ransac_for_ += 1;  // TODO(simon) Magic number.
 
   view_pointcloud();
-
 
   const int w = image.as<rs2::video_frame>().get_width();
   const int h = image.as<rs2::video_frame>().get_height();
@@ -67,32 +62,19 @@ void PoseEstimation::run_pose_estimation() {
 
 }
 void PoseEstimation::setup_pose_estimation() {
-//  std::string config_path = std::filesystem::current_path().parent_path() / "config/realtime_pose_estimation_config.json";
-//  std::ofstream config_file;
-//  config_file.open(config_path);
-//
-//  while (config_file.is_open()){
-//
-//    std::cout << config_file.rdbuf() << std::endl;
-//
-//    config_file.close();
-//  }
-//
-//  std::cout << "config_path: " << config_path << std::endl;
 
- rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag";
+ rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag";  // TODO(simon) Get rosbag path as a static constexpr variable in PoseEstimation.h
 
 
   if (load_from_rosbag){
     std::cout << "Loaded rosbag: " << rosbag_path_ << std::endl;
-//    p.stop();  // TODO(simon) check if stream is running. p.get_active_profile().get_device()
     rs2::config cfg;
     cfg.enable_device_from_file(rosbag_path_,!single_run_);
     auto profile = p.start(cfg);
     auto dev = profile.get_device();
 
     if (auto p = dev.as<rs2::playback>()){
-      p.set_real_time(0); //! Doesn't skip frames. :)
+      p.set_real_time(0); //! Doesn't skip frames.
     }
 
   }
@@ -107,28 +89,19 @@ void PoseEstimation::setup_pose_estimation() {
 
   }
 
-//  rs2_get_video_stream_intrinsics()
-
   set_camera_parameters();
 
-//  object_detection_object_.set_model_path("models/yolox_s_only_pallet_void_300epoch_o10/yolox_s_only_pallet_void_300epoch_lim_o10.xml");
   object_detection_object_.set_model_path("models/yolox_s_only_pallet_294epoch_o10/yolox_s_only_pallet_294epoch_o10.xml");
   object_detection_object_.set_object_detection_settings(0.3,0.1); //! Får med hele sekvensen: 0.3,0.1 | 0.3,0.75  // TODO(simon) Magic number.
   object_detection_object_.setup_object_detection();
   pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
   viewer_ = viewer;
 
-//  dictionary_ = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_APRILTAG_25h9);
-
   std::cout << "Setup" << std::endl;
 
 }
 void PoseEstimation::calculate_aruco() {
-
   cv::aruco::detectMarkers(image_, dictionary_, markerCorners_, markerIds_, parameters_, rejectedCandidates_);
-
-//  cv::aruco::CornerRefineMethod::CORNER_REFINE_APRILTAG
-
 
   if (markerCorners_.size() > 0){  // TODO(simon) Magic number.
     cv::drawMarker(image_,markerCorners_.at(0).at(0),cv::Scalar(0,0,255));  // TODO(simon) Magic number.
@@ -136,18 +109,9 @@ void PoseEstimation::calculate_aruco() {
     cv::drawMarker(image_,markerCorners_.at(0).at(2),cv::Scalar(0,0,255));  // TODO(simon) Magic number.
     cv::drawMarker(image_,markerCorners_.at(0).at(3),cv::Scalar(0,0,255));  // TODO(simon) Magic number.
       }
-
-
-
-//  cv::aruco::detectMarkers(image_, dictionary_, markerCorners_, markerIds_,
-//                           parameters_, rejectedCandidates_);
-//
-//
-//  std::cout << markerCorners_.size() << std::endl;
 }
 
 void PoseEstimation::calculate_pose() {
-
   std::vector<cv::Vec3d> rvecs, tvecs, object_points;
   cv::aruco::estimatePoseSingleMarkers(markerCorners_,0.535,example_camera_matrix_,example_dist_coefficients_,rvecs,tvecs,object_points);  // TODO(simon) Magic number.
    // TODO(simon) Set marker size as parameter. 0.175 0.535
@@ -164,12 +128,6 @@ void PoseEstimation::calculate_pose() {
 
     ground_truth_vector_ = z_axis*Rot;
   }
-
-
-//  std::cout << rvecs.size() << "\n" << tvecs.size() << "\n" << object_points.size() << std::endl;
-//  std::cout << rvecs.at(0) << "\n" << tvecs.at(0) << std::endl;
-
-
   if (!rvecs.empty() && !tvecs.empty()){
     std::stringstream rotation;
     std::stringstream translation;
@@ -177,18 +135,12 @@ void PoseEstimation::calculate_pose() {
     rvecs_ = rvecs;
     tvecs_ = tvecs;
 
-//    rotation << rvecs.at(0);
     rotation << "[" << rvecs.at(0)[0] << ", " << rvecs.at(0)[1] << ", " << rvecs.at(0)[2] << "]";  // TODO(simon) Magic number.
     translation << tvecs.at(0);  // TODO(simon) Magic number.
-//    std::cout << rvecs.size() << "\n" << tvecs.size() << "\n" << object_points.size() << std::endl;
-//    std::cout << rvecs.at(0) << "\n" << tvecs.at(0) << std::endl;
     cv::putText(image_,rotation.str(),cv::Point(50,50),cv::FONT_HERSHEY_DUPLEX,1,cv::Scalar(0,255,0),2,false);  // TODO(simon) Magic number.
     cv::putText(image_,translation.str(),cv::Point(50,100),cv::FONT_HERSHEY_DUPLEX,1,cv::Scalar(0,255,0),2,false);  // TODO(simon) Magic number.
     cv::aruco::drawAxis(image_,example_camera_matrix_,example_dist_coefficients_,rvecs,tvecs,0.535/2);  // TODO(simon) Magic number.
   }
-
-//  cv::aruco::drawAxis(image_,example_camera_matrix,example_dist_coefficients,rvecs,tvecs,0.1);
-
 }
 
 void PoseEstimation::set_camera_parameters() {  // TODO(simon) Not in use.
@@ -209,15 +161,9 @@ void PoseEstimation::set_camera_parameters() {  // TODO(simon) Not in use.
   dist_coefficients_.at(2) = -0.00164696;  // TODO(simon) Magic number.
   dist_coefficients_.at(3) = 0.000623876;  // TODO(simon) Magic number.
   dist_coefficients_.at(4) = 0.466404;  // TODO(simon) Magic number.
-
-//  Color:  [ 1280x720  p[662.66 367.428]  f[907.114 907.605]  Brown Conrady [0.157553 -0.501105 -0.00164696 0.000623876 0.466404] ]
-//  Depth:  [ 640x480  p[315.527 255.336]  f[457.488 456.41]  None [0 0 0 0 0] ]
-//  camera_matrix_.at(0) =
-
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr PoseEstimation::points_to_pcl(const rs2::points &points) {
-
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
   auto sp = points.get_profile().as<rs2::video_stream_profile>();
@@ -233,11 +179,9 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr PoseEstimation::points_to_pcl(const rs2::poi
     p.z = ptr->z;
     ptr++;
   }
-
   return cloud;
 }
 void PoseEstimation::edit_pointcloud() {
-
   pcl::FrustumCulling<pcl::PointXYZ> frustum_filter;
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr local_cloud (new pcl::PointCloud<pcl::PointXYZ>);
@@ -245,8 +189,6 @@ void PoseEstimation::edit_pointcloud() {
 
   local_cloud = pcl_points_;
   frustum_filter_inliers_.clear();
-
-//  pcl::PointCloud<pcl::PointXYZ>::Ptr merged_cloud (new pcl::PointCloud<pcl::PointXYZ>);
 
   Eigen::Matrix4f camera_pose;
   Eigen::Matrix4f rotation_red_pos_ccw;
@@ -257,7 +199,6 @@ void PoseEstimation::edit_pointcloud() {
                   1, 0,  0, 0,  // TODO(simon) Magic number.
                   0, 0,  0, 1;  // TODO(simon) Magic number.
 
-
   Eigen::Vector2d z_inverse;
   z_inverse << 1,0;  // TODO(simon) Magic number.
   Eigen::Vector2d center_frustum_zy;
@@ -266,7 +207,6 @@ void PoseEstimation::edit_pointcloud() {
   center_frustum_zx << center_frustum_.z,center_frustum_.x;
   double angle_zy = std::acos((z_inverse.dot(center_frustum_zy))/(z_inverse.norm()*center_frustum_zy.norm()));
   double angle_zx = std::acos((z_inverse.dot(center_frustum_zx))/(z_inverse.norm()*center_frustum_zx.norm()));
-
 
   if (std::chrono::system_clock::now() > start_debug_time_){
     std::cout << "\n ROTATION: \n " <<  std::endl;
@@ -282,7 +222,6 @@ void PoseEstimation::edit_pointcloud() {
     std::cout << "center_frustum_zy: " << center_frustum_zy << std::endl;
     std::cout << "angle_zy: " << angle_zy << std::endl;
     std::cout << "angle_zx: " << angle_zx << std::endl;
-
   }
 
   if (center_frustum_zx.y()>0){  // TODO(simon) This is a hack. Solve the problem not the symptom.  // TODO(simon) Magic number.
@@ -322,13 +261,9 @@ void PoseEstimation::edit_pointcloud() {
     std::cout << "cloud_pallet_->size() " <<  cloud_pallet_->size() << std::endl;
     std::cout << "local_cloud->size() " <<  local_cloud->size() << std::endl;
   }
-
-
-
-
 }
-void PoseEstimation::view_pointcloud() {
 
+void PoseEstimation::view_pointcloud() {
     if (first_run_){
     viewer_->setBackgroundColor (0, 0, 0);  // TODO(simon) Magic number.
     viewer_->addCoordinateSystem (1);  // TODO(simon) Magic number.
@@ -353,53 +288,18 @@ void PoseEstimation::view_pointcloud() {
   }
 
   if (frustum_filter_inliers_.size()>10){  // TODO(simon) Magic number.
-//    std::cout << frustum_filter_inliers_.size() << std::endl;
     for (int i = 0; i < frustum_filter_inliers_.size(); ++i) {
       final_cloud_view->points[frustum_filter_inliers_.at(i)].b=0;
     }
   }
 
-//  float vector_length = 0.1;  // TODO(simon) Input as parameter.
-
-//  if (output_cloud_with_normals_->size() > 10){ //! This is slow, use only for debugging.
-//    for (int i = 0; i < output_cloud_with_normals_->size(); ++i) {
-//      viewer_->addLine(pcl::PointXYZ(output_cloud_with_normals_->at(i).x,
-//                                     output_cloud_with_normals_->at(i).y,
-//                                     output_cloud_with_normals_->at(i).z),
-//                       pcl::PointXYZ(output_cloud_with_normals_->at(i).x+output_cloud_with_normals_->at(i).normal_x*vector_length,
-//                                     output_cloud_with_normals_->at(i).y+output_cloud_with_normals_->at(i).normal_y*vector_length,
-//                                     output_cloud_with_normals_->at(i).z+output_cloud_with_normals_->at(i).normal_z*vector_length),
-//                       std::to_string(i),0);
-//    }
-//  }
-
-
-//  for (int i = 0; i < inliers_->indices.size(); ++i) {
-//    final_cloud_view->points[inliers_->indices.at(i)].g = 0;
-//    final_cloud_view->points[inliers_->indices.at(i)].b = 0;
-//  }
-
 //! Adding and removing Pointclouds
   viewer_->addPointCloud(final_cloud_view,"final_cloud",0); //! Everything with color  // TODO(simon) Magic number.
-//  viewer_->addPointCloud(cloud_pallet_); //! Only pallet
-//  viewer_->addPointCloud(final_); //! RANSAC test
-//  viewer_->addPointCloudNormals<pcl::PointNormal>(output_cloud_with_normals_,100,0.1f,"final_normals",0);
-//  viewer_->addPointCloudNormals<pcl::PointNormal>(extracted_cloud_with_normals_,100,0.1f,"extracted_normals",0);
-
-//  pcl::io::savePCDFileASCII("/home/nylund/Documents/git_uia/realtime_pose_estimation/exports/cloud_pallet_.pcd",*cloud_pallet_);
-//  pcl::io::savePCDFileASCII("/home/nylund/Documents/git_uia/realtime_pose_estimation/exports/final_cloud_view.pcd",*final_cloud_view);
-
-
 
   if (!rvecs_.empty() && !tvecs_.empty()){
     Eigen::Affine3f rotation;
-//    std::cout << "RVECS: " << rvecs_.at(0) << std::endl;
-//    std::cout << "TVECS: " << tvecs_.at(0) << std::endl;
-//    viewer_->addCoordinateSystem(0.535,0.128196, 0.0394752, 0.815717,"aruco_marker",0);
 
     pcl::PointXYZ startpoint = pcl::PointXYZ(tvecs_.at(0)[0],tvecs_.at(0)[1],tvecs_.at(0)[2]);  // TODO(simon) Magic number.
-//    pcl::PointXYZ startpoint = pcl::PointXYZ(0,0,0);
-//    pcl::PointXYZ endpoint = pcl::PointXYZ(tvecs_.at(0)[0]+rvecs_.at(0)[0],tvecs_.at(0)[1]+rvecs_.at(0)[1],tvecs_.at(0)[2]+rvecs_.at(0)[2]);
     std::vector<double>ground_truth_vector_converted(ground_truth_vector_.begin<double>(), ground_truth_vector_.end<double>());
 
     pcl::PointXYZ endpoint = pcl::PointXYZ(tvecs_.at(0)[0]-ground_truth_vector_converted.at(0), //TODO(simon) Testing remove "*2" Justering er ikke linjær  // TODO(simon) Magic number.
@@ -423,8 +323,6 @@ void PoseEstimation::view_pointcloud() {
     viewer_->addLine(startpoint,
                      endpoint,0,0,255,  // TODO(simon) Magic number.
                      "ground_truth",0);  // TODO(simon) Magic number.
-
-
   }
 
   if (std::chrono::system_clock::now() > start_debug_time_){
@@ -466,55 +364,12 @@ void PoseEstimation::view_pointcloud() {
     viewer_->addPlane(coff,0.0,0.0,0.0,"pallet_plane",0);  // TODO(simon) Magic number.
   }
 
-
-//  if (first_ransac_model_coefficients_.size() > 2){
-//    pcl::ModelCoefficients coff;
-//    coff.values = first_ransac_model_coefficients_;
-//    viewer_->addPlane(coff,0.0,0.0,0.0,"first_plane",0);
-//  }
-
-
-
-
-//  if (intersect_point_.values.size() > 3){
-//    viewer_->addSphere(intersect_point_,"circle",0);
-//  }
-
-
   if (ransac_model_coefficients_.size() > 2){  // TODO(simon) Magic number.
     viewer_->addLine(plane_frustum_vector_intersect_,
                      pose_vector_end_point_,0,255,0,  // TODO(simon) Magic number.
                      "pose_vector",0);  // TODO(simon) Magic number.
   }
-
-
-
-
-
-
-//    while (LoggerFile.is_open()){
-//          LoggerFile << plane_frustum_vector_intersect_.x << ","
-//                     << plane_frustum_vector_intersect_.y << ","
-//                     << plane_frustum_vector_intersect_.z << ","
-////                     << ransac_model_coefficients_.at(0) << ","
-////                     << ransac_model_coefficients_.at(1) << ","
-////                     << ransac_model_coefficients_.at(2) << ","
-////                     << tvecs_.at(0) << ","
-////                     << tvecs_.at(1) << ","
-////                     << tvecs_.at(2) << ","
-////                     << rvecs_.at(0) << ","
-////                     << rvecs_.at(1) << ","
-////                     << rvecs_.at(2)
-//                     << std::endl;
-//          LoggerFile.close();
-//    }
-//  }
-
-
-
-
-  viewer_->spinOnce(1);
-
+    viewer_->spinOnce(1);
 }
 void PoseEstimation::calculate_3d_crop() {
 
@@ -539,7 +394,6 @@ void PoseEstimation::calculate_3d_crop() {
   square_frustum_detection_points_.clear();
   for (int i = 0; i < 4; ++i) {  // TODO(simon) Magic number.
     detection_from_image_center_.emplace_back((detection_point_vec.at(i) - image_center) / zed_k_matrix_[0]); //TODO(simon) Get K matrix from intel realsense; The difference bwetween this is too spall  // TODO(simon) Magic number.
-//    detection_from_image_center_.at(i).y() *= -1;  // TODO(simon) This is a hack to invert the y-axis.
     square_frustum_detection_points_.emplace_back(detection_from_image_center_.at(i).x()*detection_vector_scale_,
                                                   detection_from_image_center_.at(i).y()*detection_vector_scale_,
                                                   detection_vector_scale_);
@@ -553,7 +407,6 @@ void PoseEstimation::calculate_3d_crop() {
       std::cout << "detection_from_image_center_: " << detection_from_image_center_.at(i) << std::endl;
     }
   }
-
 
   Eigen::Vector3f vector_0(square_frustum_detection_points_.at(0).x,  // TODO(simon) Magic number.
                            square_frustum_detection_points_.at(0).y,  // TODO(simon) Magic number.
@@ -587,8 +440,6 @@ void PoseEstimation::calculate_3d_crop() {
 
   Eigen::Vector3f vector_camera_front(1,0,0);  // TODO(simon) Magic number.
 
-
-
   float dot_01 = vector_0.dot(vector_1);
   float dot_02 = vector_0.dot(vector_2);
 
@@ -599,17 +450,8 @@ void PoseEstimation::calculate_3d_crop() {
   float angle_01 = std::acos(dot_01/(len_sq_0*len_sq_1));
   float angle_02 = std::acos(dot_02/(len_sq_0*len_sq_2));
 
-//  std::cout << "dot: " << dot << " len_sq_0: " << len_sq_0 << " len_sq_1: " << len_sq_1 << " Angle: " << angle << std::endl;
-//  std::cout << "angle_01: " << angle_01*57.2958 << " angle_02: " << angle_02*57.2958 << std::endl;
-
   fov_h_rad_ = angle_01;
   fov_v_rad_ = angle_02;
-
-//  std::cout << "Vector 0: " << vector_0 << std::endl;
-//  std::cout << "Vector 1: " << vector_1 << std::endl;
-//  std::cout << "Vector 2: " << vector_2 << std::endl;
-//  std::cout << "Vector 3: " << vector_3 << std::endl;
-//  std::cout << "vector_center: " << vector_center << std::endl;
 
   if (std::chrono::system_clock::now() > start_debug_time_){
     std::cout << "detection_point_vec_0: " << detection_point_vec.at(0).x() << " " << detection_point_vec.at(0).y() << std::endl;  // TODO(simon) Magic number.
@@ -617,14 +459,9 @@ void PoseEstimation::calculate_3d_crop() {
     std::cout << "detection_point_vec_2: " << detection_point_vec.at(2).x() << " " << detection_point_vec.at(2).y() << std::endl;  // TODO(simon) Magic number.
     std::cout << "detection_point_vec_3: " << detection_point_vec.at(3).x() << " " << detection_point_vec.at(3).y() << std::endl;  // TODO(simon) Magic number.
   }
-
-
-
-//  cv::waitKey(0);
-
 }
-void PoseEstimation::calculate_ransac() {
 
+void PoseEstimation::calculate_ransac() {
   pcl::ModelCoefficients::Ptr first_coefficients (new pcl::ModelCoefficients);
   pcl::PointIndices::Ptr first_inliers (new pcl::PointIndices);
 
@@ -664,12 +501,7 @@ void PoseEstimation::calculate_ransac() {
     final_ = final;
   }
 
-
   pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
-
-//  if (inliers_->indices.size()>10){
-//    inliers_->indices.clear();
-//  }
 
   pcl::PointCloud<pcl::PointNormal>::Ptr input_cloud_with_normals(new pcl::PointCloud<pcl::PointNormal>);
   pcl::PointCloud<pcl::PointNormal>::Ptr output_cloud_with_normals(new pcl::PointCloud<pcl::PointNormal>);
@@ -689,7 +521,7 @@ void PoseEstimation::calculate_ransac() {
   std::cout << "Sampling surface normals" << std::endl;
   std::cout << "input_cloud_with_normals size: " << input_cloud_with_normals->size() << std::endl;
 
-//  //Sampling surface normals
+//!  Sampling surface normals
   if (input_cloud_with_normals->size()>10){ //TODO(simon) 10 should be set as input parameter.  // TODO(simon) Magic number.
     pcl::SamplingSurfaceNormal<pcl::PointNormal> sample_surface_normal;
     sample_surface_normal.setInputCloud(input_cloud_with_normals);
@@ -717,8 +549,7 @@ void PoseEstimation::calculate_ransac() {
     }
   }
 
-
-  // RANSAC
+  //! RANSAC
   if (input_cloud_with_normals->size()>10){ //TODO(simon) 10 should be set as input parameter.  // TODO(simon) Magic number.
     pcl::SACSegmentationFromNormals<pcl::PointNormal,pcl::PointNormal> segmentation;
     pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
@@ -744,8 +575,7 @@ void PoseEstimation::calculate_ransac() {
     }
   }
 
-
-  // Extract filter
+  //! Extract filter
 
   if (output_cloud_with_normals_->size()>10){ //TODO(simon) 10 should be set as input parameter.  // TODO(simon) Magic number.
     pcl::PointCloud<pcl::PointNormal>::Ptr extracted_cloud_with_normals(new pcl::PointCloud<pcl::PointNormal>);
@@ -759,8 +589,7 @@ void PoseEstimation::calculate_ransac() {
     extracted_cloud_with_normals_ = extracted_cloud_with_normals;
   }
 
-  // RANSAC 2
-
+  //! RANSAC 2
   if (extracted_cloud_with_normals_->size()>10){ //TODO(simon) 10 should be set as input parameter.  // TODO(simon) Magic number.
     pcl::SACSegmentationFromNormals<pcl::PointNormal,pcl::PointNormal> second_segmentation;
     pcl::ModelCoefficients::Ptr second_coefficients (new pcl::ModelCoefficients);
@@ -786,7 +615,6 @@ void PoseEstimation::calculate_ransac() {
       second_ransac_model_coefficients_.emplace_back(second_coefficients->values.at(i));
     }
   }
-
   inliers_ = inliers;
 }
 
@@ -802,8 +630,6 @@ Eigen::Affine3f PoseEstimation::create_rotation_matrix(float ax, float ay, float
 }
 
 void PoseEstimation::calculate_pose_vector() {
-  // Calculating plane, vector intersection point and
-
   intersect_point_.values.resize(4);  // TODO(simon) Magic number.
   float distance_scalar = 0;
   Eigen::Vector3f center_frustum_vector;
@@ -811,7 +637,6 @@ void PoseEstimation::calculate_pose_vector() {
   Eigen::Vector3f plane_orgin;
   Eigen::Vector3f plane_normal_vector;
 
-;
   plane_vector_intersect_.x = -ransac_model_coefficients_.at(0)*ransac_model_coefficients_.at(3);  // TODO(simon) Magic number.
   plane_vector_intersect_.y = -ransac_model_coefficients_.at(1)*ransac_model_coefficients_.at(3);  // TODO(simon) Magic number.
   plane_vector_intersect_.z = -ransac_model_coefficients_.at(2)*ransac_model_coefficients_.at(3);  // TODO(simon) Magic number.
@@ -852,22 +677,8 @@ void PoseEstimation::calculate_pose_vector() {
     pose_vector_end_point_.z = plane_vector_intersect.z() + second_ransac_model_coefficients_.at(2);  // TODO(simon) Magic number.
   }
   else if (ransac_model_coefficients_.at(2)<0){  // TODO(simon) Magic number.
-
   }
-
-//  std::cout << "intersect_point_: " << "x: " <<intersect_point_.values[0]
-//                                    << "y: " <<intersect_point_.values[1]
-//                                    << "z: " <<intersect_point_.values[2] << std::endl;
-//  ransac_model_coefficients_;
-//  center_frustum_;
-
 }
-void PoseEstimation::calculate_rotation_units() {
-
-
-}
-
-
 
 void PoseEstimation::log_data(uint32_t frame) {
   if (enable_logger_ && ransac_model_coefficients_.size() > 1 && tvecs_.size() >= 1 && rvecs_.size() >= 1){  // TODO(simon) Magic number.
@@ -879,7 +690,7 @@ void PoseEstimation::log_data(uint32_t frame) {
                << second_ransac_model_coefficients_.at(0) << ","  // TODO(simon) Magic number.
                << (-1*first_ransac_model_coefficients_.at(2)) << ","  // TODO(simon) Magic number.
                << second_ransac_model_coefficients_.at(2) << ","  // TODO(simon) Magic number.
-               << converted_ground_truth_vector_.at(0) << ","  // TODO(simon) Magic number.
+               << converted_ground_truth_vector_.at(0) << ","  // TODO(simon) Magic nu    mber.
                << converted_ground_truth_vector_.at(1) << ","  // TODO(simon) Magic number.
                << converted_ground_truth_vector_.at(2) << ","  // TODO(simon) Magic number.
                << converted_ground_truth_vector_.at(3) << ","  // TODO(simon) Magic number.
@@ -893,5 +704,4 @@ void PoseEstimation::log_data(uint32_t frame) {
     LoggerFile << frame <<std::endl;
     LoggerFile.close();
   }
-
 }

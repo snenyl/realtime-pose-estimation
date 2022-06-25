@@ -25,34 +25,31 @@
 #include <pcl/point_types.h>
 #include <jsoncpp/json/json.h>
 
-#include "ObjectDetection.h"
+#include "ObjectDetection/ObjectDetection.h"
 
-#ifndef REALTIME_POSE_ESTIMATION_INCLUDE_POSEESTIMATION_H_
-#define REALTIME_POSE_ESTIMATION_INCLUDE_POSEESTIMATION_H_
+#ifndef INCLUDE_POSEESTIMATION_POSEESTIMATION_POSEESTIMATION_H_
+#define INCLUDE_POSEESTIMATION_POSEESTIMATION_POSEESTIMATION_H_
 
 class PoseEstimation {
  public:
-
   void run_pose_estimation();
   void setup_pose_estimation();
 
  private:
+  //! Variables
+
 
   //! Aruco functions
-
   void calculate_aruco();
   void calculate_pose();
   void set_camera_parameters();
 
   //! Pose estimation functions
-  void load_pointcloud();
   void edit_pointcloud();
   void calculate_ransac();
-  void calculate_rotation_units();
   void calculate_pose_vector();
   void calculate_3d_crop();
   pcl::PointCloud<pcl::PointXYZ>::Ptr points_to_pcl(const rs2::points& points);
-  void set_3d_aruco_a();
   void view_pointcloud();
   void log_data(uint32_t frame);
 
@@ -150,4 +147,4 @@ class PoseEstimation {
 
 };
 
-#endif //REALTIME_POSE_ESTIMATION_INCLUDE_POSEESTIMATION_H_
+#endif  // INCLUDE_POSEESTIMATION_POSEESTIMATION_POSEESTIMATION_H_
