@@ -24,7 +24,7 @@ The
 
 The object detection algorithm is the YOLOX-S model from the YOLOX repository, which is transfer learned on the 
 Logistics Objects in Context (LOCO) dataset. The final version is optimized with Intel OpenVINO and implemented together
-with the pose estimation in C++. [Table 1](table_1) present the training results for only pallet.
+with the pose estimation in C++. [Table 1](#table_1) present the training results for only pallet.
 
 <center>
 
