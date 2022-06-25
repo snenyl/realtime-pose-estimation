@@ -1,7 +1,7 @@
 // Copyright 2022 Simon Erik Nylund.
 // Author: snenyl
 
-#include "ObjectDetection.h"
+#include "ObjectDetection/ObjectDetection.h"
 
 void ObjectDetection::setup_object_detection() {
 //  model_path_ = "models/yolox_s_only_pallet_294epoch_o10/yolox_s_only_pallet_294epoch_o10.xml";

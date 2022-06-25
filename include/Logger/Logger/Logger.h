@@ -3,15 +3,12 @@
 
 #include <boost/log/trivial.hpp>
 
-#ifndef REALTIME_POSE_ESTIMATION_INCLUDE_LOGGER_LOGGER_H_
-#define REALTIME_POSE_ESTIMATION_INCLUDE_LOGGER_LOGGER_H_
+#ifndef INCLUDE_LOGGER_LOGGER_LOGGER_H_
+#define INCLUDE_LOGGER_LOGGER_LOGGER_H_
 
-class Logger {
+class Logger {  // TODO(simon) Add logger features.
  public:
-
-
  private:
-
 };
 
-#endif //REALTIME_POSE_ESTIMATION_INCLUDE_LOGGER_LOGGER_H_
+#endif  // INCLUDE_LOGGER_LOGGER_LOGGER_H_
