@@ -1,6 +1,5 @@
-//
-// Created by nylund on 07.04.2022.
-//
+// Copyright 2022 Simon Erik Nylund.
+// Author: snenyl
 
 #include <boost/log/trivial.hpp>
 

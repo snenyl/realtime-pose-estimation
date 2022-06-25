@@ -1,6 +1,6 @@
 add_library(pose_estimation
             PoseEstimation.h
-            PoseEstimation.cpp
+            PoseEstimation.cc
             )
 
 set_target_properties(pose_estimation PROPERTIES LINKER_LANGUAGE CXX)

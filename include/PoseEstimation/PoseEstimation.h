@@ -1,6 +1,5 @@
-//
-// Created by nylund on 19.03.2022.
-//
+// Copyright 2022 Simon Erik Nylund.
+// Author: snenyl
 
 #include <iostream>
 #include <chrono>

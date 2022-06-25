@@ -1,6 +1,5 @@
-//
-// Created by nylund on 19.03.2022.
-//
+// Copyright 2022 Simon Erik Nylund.
+// Author: snenyl
 
 #include "PoseEstimation.h"
 
@@ -83,7 +82,7 @@ void PoseEstimation::setup_pose_estimation() {
 
 
 //  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_161534_2meter_with_light_standing_aruco_0.bag";
-  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/ros_bags_27032022/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag";
+  rosbag_path_ = std::filesystem::current_path().parent_path() / "data/20220227_152646_warehouse_pallet_trolley.bag";
 
 
 

@@ -1,6 +1,6 @@
 add_library(logger
             Logger.h
-            Logger.cpp
+            Logger.cc
             )
 
 set_target_properties(logger PROPERTIES LINKER_LANGUAGE CXX)

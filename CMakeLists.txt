@@ -26,7 +26,7 @@ include_directories(
             ${PCL_INCLUDE_DIRS}
 )
 
-add_executable(realtime_pose_estimation src/main.cpp)
+add_executable(realtime_pose_estimation src/main.cc)
 
 target_link_libraries(realtime_pose_estimation
                       pose_estimation
