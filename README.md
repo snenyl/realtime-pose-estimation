@@ -40,7 +40,7 @@ with the pose estimation in C++. [Table 1](#table_1) present the YOLOX-S trainin
 <div align="center">
 
 [<img src="assets/unreal_synthetic_pallet.png" width="80%">](https://youtu.be/XEYaCEHEH3g)
-<figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Synthetic pallet detection video test in Unreal Engine.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Synthetic pallet detection video test in Unreal Engine using YOLOX-S trained on the LOCO dataset.</b></figcaption>
 
 &nbsp;
 
@@ -67,7 +67,7 @@ While the pallet orientation is directly from the estimated from the front plane
 <div align="center">
 
 [<img src="assets/april_tag_test_moving_thumbnail.png" width="80%"> ](https://youtu.be/BfEB9jjqpF0)
-<figcaption align = "center"><b><a name="figure_4">Figure 4:</a> Moving test evaluated with an AprilTag.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_4">Figure 4:</a> Real-time moving test evaluated with an AprilTag.</b></figcaption>
 
 &nbsp;
 
@@ -76,7 +76,7 @@ While the pallet orientation is directly from the estimated from the front plane
 
 
 [<img src="assets/april_tag_test_thumbnail.png" width="80%">](https://youtu.be/-xybFGRdweY)
-<figcaption align = "center"><b><a name="figure_5">Figure 5:</a> Standstill test evaluated with an AprilTag.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_5">Figure 5:</a> Real-time standstill test evaluated with an AprilTag.</b></figcaption>
 
 
 [//]: # (<figcaption align = "center"><b>Figure 3: Realtime pose estimation standstill.</b></figcaption>)
