@@ -8,9 +8,9 @@
 This is part of the master’s thesis: "_A Machine Learning and Point Cloud Processing based Approach for Object Detection 
 and Pose Estimation: Design, Implementation, and Validation_", available at [Link to thesis].
 
-The 
+By combining an RGB image and point cloud data is the system capable of detecting the object's pose by using object detection,
+RANSAC and linear algebra. 
 
-[Bullet points]
 ## Demo video
 
 <div align="center">
@@ -37,14 +37,6 @@ with the pose estimation in C++. [Table 1](#table_1) present the training result
 
 
 ## Pose Estimation
-
-<object data="assets/overview_of_system_design.drawio.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="assets/overview_of_system_design.drawio.pdf">
-        <p>This browser does not support PDFs. Please download to view it: <a href="assets/overview_of_system_design.drawio.pdf">System overiew</a>.</p>
-    </embed>
-</object>
-
-
 The pose estimation is performed using the object detection algorithm and point cloud data. The object detection is only
 the relevant point of the pallet used where two RANSAC operations are performed. The first plane uses only ground floor 
 points, while the remaining pallet points are used for the second plane. A center vector from the camera is used to find
