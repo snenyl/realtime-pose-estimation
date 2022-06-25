@@ -22,26 +22,32 @@ The
 
 ## Object Detection
 
-The object detection algorithm is from the YOLOX. [Cite yolox]
-The used dataset is from Logistics Objects in Context (LOCO) [cite ]
-
-Optimized with OpenVINO.
+The object detection algorithm is the YOLOX-S model from the YOLOX repository, which is transfer learned on the 
+Logistics Objects in Context (LOCO) dataset. The final version is optimized with Intel OpenVINO and implemented together
+with the pose estimation in C++. [Table 1](table_1) present the training results for only pallet.
 
 <center>
 
 | **Model** | **Parameters** | **Dataset** | **AP** | **AP50** | **AP75** | **AP_S** | **AP_M** | **AP_L** | **Inference time** |
 |:---------:|:--------------:|:-----------:|:------:|:--------:|:--------:|:--------:|:--------:|:--------:|:------------------:|
 |   YOLOX-S |      9.0 M     |     LOCO    |  24.0% |   53.2%  |   17.2%  |   7.9%   |   24.3%  |   40.6%  |       6.74 ms      |
-<figcaption align = "center"><b>Table 1: Training results for only pallet's from the LOCO dataset, trained on an NVIDIA GeForce RTX 3060 Laptop GPU.</b></figcaption>
+<figcaption align = "center"><b> <a name="table_1">Table 1:</a> Training results for only pallet's from the LOCO dataset, trained on an NVIDIA GeForce RTX 3060 Laptop GPU.</b></figcaption>
 </center>
 
 
 
 ## Pose Estimation
 
-The pose estimation is performed using the combination of the object detection algorithm and 
+The pose estimation is performed using the object detection algorithm and point cloud data. The object detection is only
+the relevant point of the pallet used where two RANSAC operations are performed. The first plane uses only ground floor 
+points, while the remaining pallet points are used for the second plane. A center vector from the camera is used to find
+the 3D position where the vector intersects the pallet front plane.
+While the pallet orientation is directly from the estimated from the front plane.
 
-### Demo 
+
+
+
+### Evaluation Demo of Moving and Standstill test using a AprilTag as ground truth 
 
 <div style="width: 100%; overflow: hidden;">
      <div style="width: 48%; float: left;">
@@ -63,8 +69,8 @@ The pose estimation is performed using the combination of the object detection a
 
 ## Future Work
 
-- Improve the robustness of the system.
-- Find the pose without using the ground plane. 
+- Improve the robustness of the system by implementing more checks, so the system is capable of failing softly.
+- Find the pose using only the pallet front plane, thus increasing the range of the system. 
 
 ## License
 
