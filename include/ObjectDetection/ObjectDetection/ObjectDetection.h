@@ -53,7 +53,7 @@ class ObjectDetection {  // TODO(simon) Add Doxygen documentation.
 
   object_detection_output get_detection();
 
- private:
+ private:   // TODO(simon) Add magic numbers from ObjectDetection.cc here with "static constexpr" as prefix.
   cv::Mat static_resize(cv::Mat &img);  // TODO(simon) Check if this is a non-const reference. If so, make const or use a pointer.
 
   void blobFromImage(cv::Mat &img,

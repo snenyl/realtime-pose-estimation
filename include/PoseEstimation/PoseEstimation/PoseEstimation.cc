@@ -13,7 +13,7 @@ void PoseEstimation::run_pose_estimation() {
 
   detection_output_struct_ = object_detection_object_.get_detection();
 
-  if (std::chrono::system_clock::now() > start_debug_time_) {
+  if (std::chrono::system_clock::now() > start_debug_time_ && enable_debug_mode_) {
     std::cout << " X: " << detection_output_struct_.x
               << " Y: " << detection_output_struct_.y
               << " Width: " << detection_output_struct_.width
@@ -24,7 +24,7 @@ void PoseEstimation::run_pose_estimation() {
   calculate_3d_crop();
   edit_pointcloud();
 
-  if (std::chrono::system_clock::now() > start_debug_time_) {
+  if (std::chrono::system_clock::now() > start_debug_time_ && enable_debug_mode_) {
     std::cout << "cloud_pallet_->size(): " << cloud_pallet_->size() << std::endl;
   }
 
@@ -139,8 +139,10 @@ void PoseEstimation::calculate_pose() {
     cv::Mat z_axis(1, 3, CV_64F, z_axis_data);  // TODO(simon) Magic number.
     cv::Rodrigues(rvecs, Rot, Jacob);
 
-    std::cout << "z_axis: " << z_axis << std::endl;
-    std::cout << "Rot: " << Rot << std::endl;
+    if (enable_debug_mode_) {
+      std::cout << "z_axis: " << z_axis << std::endl;
+      std::cout << "Rot: " << Rot << std::endl;
+    }
 
     ground_truth_vector_ = z_axis * Rot;
   }
@@ -245,7 +247,7 @@ void PoseEstimation::edit_pointcloud() {
   double angle_zx =
       std::acos((z_inverse.dot(center_frustum_zx)) / (z_inverse.norm() * center_frustum_zx.norm()));
 
-  if (std::chrono::system_clock::now() > start_debug_time_) {
+  if (std::chrono::system_clock::now() > start_debug_time_ && enable_debug_mode_) {
     std::cout << "\n ROTATION: \n " << std::endl;
     std::cout << "angle_zy: " << angle_zy << std::endl;
     std::cout << "angle_zx: " << angle_zx << std::endl;
@@ -300,7 +302,7 @@ void PoseEstimation::edit_pointcloud() {
 
   cloud_pallet_ = local_pallet;
 
-  if (std::chrono::system_clock::now() > start_debug_time_) {
+  if (std::chrono::system_clock::now() > start_debug_time_ && enable_debug_mode_) {
     std::cout << "local_pallet->size() " << local_pallet->size() << std::endl;
     std::cout << "cloud_pallet_->size() " << cloud_pallet_->size() << std::endl;
     std::cout << "local_cloud->size() " << local_cloud->size() << std::endl;
@@ -369,19 +371,21 @@ void PoseEstimation::view_pointcloud() {
     converted_ground_truth_vector_.at(5) =
         -ground_truth_vector_converted.at(2);  // TODO(simon) Magic number.
 
-    for (int i = 0; i < converted_ground_truth_vector_.size(); ++i) {  // TODO(simon) Magic number.
-      std::cout << "converted_ground_truth_vector_.at(" << i << ")"
-                << converted_ground_truth_vector_.at(i) << std::endl;
-    }
+    if (enable_debug_mode_) {
+      for (int i = 0; i < converted_ground_truth_vector_.size(); ++i) {  // TODO(simon) Magic number.
+        std::cout << "converted_ground_truth_vector_.at(" << i << ")"
+                  << converted_ground_truth_vector_.at(i) << std::endl;
+      }
 
-    std::cout << "ENDPOINT: " << endpoint << std::endl;
+      std::cout << "ENDPOINT: " << endpoint << std::endl;
+    }
 
     viewer_->addLine(startpoint,
                      endpoint, 0, 0, 255,  // TODO(simon) Magic number.
                      "ground_truth", 0);  // TODO(simon) Magic number.
   }
 
-  if (std::chrono::system_clock::now() > start_debug_time_) {
+  if (std::chrono::system_clock::now() > start_debug_time_ && enable_debug_mode_) {
     std::cout << "square_frustum_detection_points_.at(0)" << square_frustum_detection_points_.at(0)
               << std::endl;  // TODO(simon) Magic number.
     std::cout << "square_frustum_detection_points_.at(1)" << square_frustum_detection_points_.at(1)
@@ -481,7 +485,7 @@ void PoseEstimation::calculate_3d_crop() {
         detection_vector_scale_);
   }
 
-  if (std::chrono::system_clock::now() > start_debug_time_) {
+  if (std::chrono::system_clock::now() > start_debug_time_ && enable_debug_mode_) {
     for (int i = 0; i < 4; ++i) {
       std::cout << "image_center X: " << image_center << std::endl;
       std::cout << "detection_point_vec.at(i): " << detection_point_vec.at(i) << std::endl;
@@ -536,7 +540,7 @@ void PoseEstimation::calculate_3d_crop() {
   fov_h_rad_ = angle_01;
   fov_v_rad_ = angle_02;
 
-  if (std::chrono::system_clock::now() > start_debug_time_) {
+  if (std::chrono::system_clock::now() > start_debug_time_ && enable_debug_mode_) {
     std::cout << "detection_point_vec_0: " << detection_point_vec.at(0).x() << " "
               << detection_point_vec.at(0).y() << std::endl;  // TODO(simon) Magic number.
     std::cout << "detection_point_vec_1: " << detection_point_vec.at(1).x() << " "
@@ -561,8 +565,10 @@ void PoseEstimation::calculate_ransac() {
   seg.setMaxIterations(50);  // TODO(simon) Magic number.
   seg.setDistanceThreshold(0.001);  // TODO(simon) Magic number.
 
-  std::cout << "First RANSAC" << std::endl;
-  std::cout << "cloud_pallet_ size: " << cloud_pallet_->size() << std::endl;
+  if (enable_debug_mode_) {
+    std::cout << "First RANSAC" << std::endl;
+    std::cout << "cloud_pallet_ size: " << cloud_pallet_->size() << std::endl;
+  }
 
   if (cloud_pallet_->size()
       > 10) {  // TODO(simon) 10 should be set as input parameter.  // TODO(simon) Magic number.
@@ -607,8 +613,11 @@ void PoseEstimation::calculate_ransac() {
     input_cloud_with_normals->points.at(i).z = cloud_pallet_->at(i).z;
   }
 
-  std::cout << "Sampling surface normals" << std::endl;
-  std::cout << "input_cloud_with_normals size: " << input_cloud_with_normals->size() << std::endl;
+  if (enable_debug_mode_) {
+    std::cout << "Sampling surface normals" << std::endl;
+    std::cout << "input_cloud_with_normals size: " << input_cloud_with_normals->size() << std::endl;
+  }
+
 
 //!  Sampling surface normals
   if (input_cloud_with_normals->size()
@@ -657,8 +666,10 @@ void PoseEstimation::calculate_ransac() {
     segmentation.setMaxIterations(500);  // TODO(simon) Magic number.
     segmentation.setDistanceThreshold(0.1);  // TODO(simon) Magic number.
 
-    std::cout << "Inbetween " << std::endl;
-    std::cout << "input_cloud_with_normals size: " << input_cloud_with_normals->size() << std::endl;
+    if (enable_debug_mode_){
+      std::cout << "Inbetween " << std::endl;
+      std::cout << "input_cloud_with_normals size: " << input_cloud_with_normals->size() << std::endl;
+    }
 
     segmentation.setEpsAngle(0.1);  // TODO(simon) Magic number.
     segmentation.setInputCloud(output_cloud_with_normals_);
@@ -701,9 +712,12 @@ void PoseEstimation::calculate_ransac() {
     second_segmentation.setMaxIterations(500);  // TODO(simon) Magic number.
     second_segmentation.setDistanceThreshold(0.1);  // TODO(simon) Magic number.
 
-    std::cout << "second_segmentation " << std::endl;
-    std::cout << "extracted_cloud_with_normals_ size: " << extracted_cloud_with_normals_->size()
-              << std::endl;
+    if (enable_debug_mode_) {
+      std::cout << "second_segmentation " << std::endl;
+      std::cout << "extracted_cloud_with_normals_ size: " << extracted_cloud_with_normals_->size()
+                << std::endl;
+    }
+
 
     second_segmentation.setEpsAngle(0.1);  // TODO(simon) Magic number.
     second_segmentation.setInputCloud(extracted_cloud_with_normals_);
@@ -762,11 +776,15 @@ void PoseEstimation::calculate_pose_vector() {
   distance_scalar = (plane_orgin.dot(plane_normal_vector)) /
       (center_frustum_vector.dot(plane_normal_vector));
 
-  std::cout << "distance_scalar: " << distance_scalar << std::endl;
+  if (enable_debug_mode_) {
+    std::cout << "distance_scalar: " << distance_scalar << std::endl;
+  }
 
   plane_vector_intersect = center_frustum_vector * distance_scalar;
 
-  std::cout << "plane_vector_intersect: " << plane_vector_intersect << std::endl;
+  if (enable_debug_mode_) {
+    std::cout << "plane_vector_intersect: " << plane_vector_intersect << std::endl;
+  }
 
   intersect_point_.values[0] =
       plane_vector_intersect.x();  // plane_vector_intersect  // TODO(simon) Magic number.

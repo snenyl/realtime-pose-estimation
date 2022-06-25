@@ -65,16 +65,15 @@ class PoseEstimation {  // TODO(simon) Add Doxygen documentation.
 
   void log_data(uint32_t frame);
 
-  bool
-      load_from_rosbag = true;  //! Select if input should be recorder rosbag or direct from camera.
+  bool load_from_rosbag = true;  //! Select if input should be recorder rosbag or direct from camera.
   bool single_run_ = true;
   bool enable_logger_ = true;
+  bool enable_debug_mode_ = false;
 
   //! Camera
   rs2::pipeline p;
   cv::Mat image_;
   std::string rosbag_path_;
-  rs2_intrinsics intrinsics_;
 
   //! Aruco variables
   std::vector<double> camera_matrix_;
