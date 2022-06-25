@@ -35,10 +35,12 @@ with the pose estimation in C++. [Table 1](#table_1) present the YOLOX-S trainin
 <figcaption align = "center"><b> <a name="table_1">Table 1:</a> Training results for only pallet's from the LOCO dataset, trained on an NVIDIA GeForce RTX 3060 Laptop GPU.</b></figcaption>
 </center>
 
+&nbsp;
+
 <div align="center">
 
 [<img src="assets/unreal_synthetic_pallet.png" width="80%">](https://youtu.be/XEYaCEHEH3g)
-<figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Synthetic pallet detection test in Unreal Engine.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Synthetic pallet detection video test in Unreal Engine.</b></figcaption>
 
 &nbsp;
 
