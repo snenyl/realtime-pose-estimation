@@ -5,7 +5,7 @@
 
 ## Introduction
 
-This is part of the masters thesis: "_A Machine Learning and Point Cloud Processing based Approach for Object Detection 
+This is part of the master’s thesis: "_A Machine Learning and Point Cloud Processing based Approach for Object Detection 
 and Pose Estimation: Design, Implementation, and Validation_", available at [Link to thesis].
 
 [Bullet points]
@@ -34,14 +34,14 @@ Training results.
  <div style="width: 100%; overflow: hidden;">
      <div style="width: 48%; float: left;">
 
-[<img src="assets/april_tag_test_thumbnail.png" width="100%">](https://youtu.be/BfEB9jjqpF0)
+[<img src="assets/april_tag_test_thumbnail.png" width="48%"> ](https://youtu.be/BfEB9jjqpF0){target="_blank"}
 <figcaption align = "center"><b>Figure 2: Realtime pose estimation moving.</b></figcaption>
 
 
 </div>
      <div style="margin-left: 52%;"> 
 
-[<img src="assets/april_tag_test_thumbnail.png" width="100%">](https://youtu.be/-xybFGRdweY)
+[<img src="assets/april_tag_test_thumbnail.png" width="48%">](https://youtu.be/-xybFGRdweY){target="_blank"}
 <figcaption align = "center"><b>Figure 3: Realtime pose estimation standstill.</b></figcaption>
 
 
