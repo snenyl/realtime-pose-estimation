@@ -32,9 +32,10 @@
 #ifndef INCLUDE_POSEESTIMATION_POSEESTIMATION_POSEESTIMATION_H_
 #define INCLUDE_POSEESTIMATION_POSEESTIMATION_POSEESTIMATION_H_
 
-class PoseEstimation {
+class PoseEstimation {  // TODO(simon) Add Doxygen documentation.
  public:
   void run_pose_estimation();
+
   void setup_pose_estimation();
 
  private:
@@ -44,19 +45,28 @@ class PoseEstimation {
 
   //! Aruco functions
   void calculate_aruco();
+
   void calculate_pose();
+
   void set_camera_parameters();
 
   //! Pose estimation functions
   void edit_pointcloud();
+
   void calculate_ransac();
+
   void calculate_pose_vector();
+
   void calculate_3d_crop();
+
   pcl::PointCloud<pcl::PointXYZ>::Ptr points_to_pcl(const rs2::points &points);
+
   void view_pointcloud();
+
   void log_data(uint32_t frame);
 
-  bool load_from_rosbag = true;  //! Select if input should be recorder rosbag or direct from camera.
+  bool
+      load_from_rosbag = true;  //! Select if input should be recorder rosbag or direct from camera.
   bool single_run_ = true;
   bool enable_logger_ = true;
 
