@@ -1,14 +1,6 @@
 // Copyright 2022 Simon Erik Nylund.
 // Author: snenyl
 
-#include <iostream>
-#include <chrono>
-#include <thread>
-#include <fstream>
-
-#include "librealsense2/rs.hpp"
-#include "opencv2/opencv.hpp"
-#include "opencv2/aruco.hpp"
 #include <pcl/common/common_headers.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/cloud_viewer.h>
@@ -24,6 +16,17 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <jsoncpp/json/json.h>
+
+#include <iostream>
+#include <chrono>
+#include <thread>
+#include <fstream>
+#include <string>
+#include <vector>
+
+#include "librealsense2/rs.hpp"
+#include "opencv2/opencv.hpp"
+#include "opencv2/aruco.hpp"
 
 #include "ObjectDetection/ObjectDetection.h"
 
@@ -139,12 +142,6 @@ class PoseEstimation {
   pcl::PointXYZ plane_vector_intersect_;
   pcl::PointXYZ plane_frustum_vector_intersect_;
   pcl::PointXYZ pose_vector_end_point_;
-
-  //! Logger
-  uint32_t last_frame_;
-  uint32_t first_frame_;
-
-
 };
 
 #endif  // INCLUDE_POSEESTIMATION_POSEESTIMATION_POSEESTIMATION_H_

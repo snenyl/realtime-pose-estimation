@@ -618,7 +618,6 @@ void PoseEstimation::calculate_ransac() {
   inliers_ = inliers;
 }
 
-
 Eigen::Affine3f PoseEstimation::create_rotation_matrix(float ax, float ay, float az) {
   Eigen::Affine3f rx =
       Eigen::Affine3f(Eigen::AngleAxisf(ax, Eigen::Vector3f(1, 0, 0)));  // TODO(simon) Magic number.
@@ -690,7 +689,7 @@ void PoseEstimation::log_data(uint32_t frame) {
                << second_ransac_model_coefficients_.at(0) << ","  // TODO(simon) Magic number.
                << (-1*first_ransac_model_coefficients_.at(2)) << ","  // TODO(simon) Magic number.
                << second_ransac_model_coefficients_.at(2) << ","  // TODO(simon) Magic number.
-               << converted_ground_truth_vector_.at(0) << ","  // TODO(simon) Magic nu    mber.
+               << converted_ground_truth_vector_.at(0) << ","  // TODO(simon) Magic number.
                << converted_ground_truth_vector_.at(1) << ","  // TODO(simon) Magic number.
                << converted_ground_truth_vector_.at(2) << ","  // TODO(simon) Magic number.
                << converted_ground_truth_vector_.at(3) << ","  // TODO(simon) Magic number.

@@ -1,4 +1,4 @@
-<div align="center"><h1>Realtime Pose Estimation</h1> </div>
+<div align="center"><h1>Real-time Pose Estimation</h1> </div>
 
 
 [//]: # (<img src="assets/logo.png" width="350">)
@@ -9,14 +9,14 @@ This is part of the master’s thesis: "_A Machine Learning and Point Cloud Proc
 and Pose Estimation: Design, Implementation, and Validation_", available at [Link to thesis].
 
 By combining an RGB image and point cloud data is the system capable of detecting the object's pose by using object detection,
-RANSAC and vector operations. 
+RANSAC and vector operations. This work is based on 
 
 ## Demo Video
 
 <div align="center">
 
 [<img src="assets/warehouse_test_thumbnail.png" width="80%">](https://www.youtube.com/watch?v=HvKInx1uoBw)
-<figcaption align = "center"><b>Figure 1: Realtime pallet selection with point cloud extraction.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_1">Figure 1:</a> Real-time pallet selection with point cloud extraction.</b></figcaption>
 
 </div>
 
@@ -24,7 +24,7 @@ RANSAC and vector operations.
 
 The object detection algorithm is the YOLOX-S model from the [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) repository, which is transfer learned on the 
 [Logistics Objects in Context (LOCO)](https://github.com/tum-fml/loco) dataset. The final version is optimized with Intel OpenVINO and implemented together
-with the pose estimation in C++. [Table 1](#table_1) present the training results for only pallet.
+with the pose estimation in C++. [Table 1](#table_1) present the YOLOX-S training results for only pallet.
 
 <center>
 
@@ -49,18 +49,19 @@ While the pallet orientation is directly from the estimated from the front plane
 ### Evaluation Demo
 
 <div align="center">
-<h4>Moving test:</h4>
-
 
 [<img src="assets/april_tag_test_moving_thumbnail.png" width="80%"> ](https://youtu.be/BfEB9jjqpF0)
+<figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Moving test evaluated with an AprilTag.</b></figcaption>
+
+
 
 [//]: # (<figcaption align = "center"><b>Figure 2: Realtime pose estimation moving.</b></figcaption>)
 
 
 
-<h4>Standstill test #2:</h4>
-
 [<img src="assets/april_tag_test_thumbnail.png" width="80%">](https://youtu.be/-xybFGRdweY)
+<figcaption align = "center"><b><a name="figure_3">Figure 3:</a> Standstill test evaluated with an AprilTag.</b></figcaption>
+
 
 [//]: # (<figcaption align = "center"><b>Figure 3: Realtime pose estimation standstill.</b></figcaption>)
 </div>
