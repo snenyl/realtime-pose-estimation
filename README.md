@@ -9,7 +9,7 @@ This is part of the master’s thesis: "_A Machine Learning and Point Cloud Proc
 and Pose Estimation: Design, Implementation, and Validation_", available at [Link to thesis].
 
 By combining an RGB image and point cloud data is the system capable of detecting the object's pose by using object detection,
-RANSAC and vector operations. This work is based on [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) algorithm and
+RANSAC and vector operations. This work is based on the [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) algorithm and
 [Logistics Objects in Context (LOCO)](https://github.com/tum-fml/loco) dataset from 2021 and 2020, respectively.
 
 ## Demo Video
@@ -44,15 +44,19 @@ points, while the remaining pallet points are used for the second plane. A cente
 the 3D position where the vector intersects the pallet front plane.
 While the pallet orientation is directly from the estimated from the front plane.
 
+<div align="center">
 
+<img src="assets/3d_explain.png" width="80%">
+<figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Vector and point explanation from the PCL 3D viewer.</b></figcaption>
 
+</div>
 
 ### Evaluation Demo
 
 <div align="center">
 
 [<img src="assets/april_tag_test_moving_thumbnail.png" width="80%"> ](https://youtu.be/BfEB9jjqpF0)
-<figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Moving test evaluated with an AprilTag.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_3">Figure 3:</a> Moving test evaluated with an AprilTag.</b></figcaption>
 
 &nbsp;
 
@@ -61,7 +65,7 @@ While the pallet orientation is directly from the estimated from the front plane
 
 
 [<img src="assets/april_tag_test_thumbnail.png" width="80%">](https://youtu.be/-xybFGRdweY)
-<figcaption align = "center"><b><a name="figure_3">Figure 3:</a> Standstill test evaluated with an AprilTag.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_4">Figure 4:</a> Standstill test evaluated with an AprilTag.</b></figcaption>
 
 
 [//]: # (<figcaption align = "center"><b>Figure 3: Realtime pose estimation standstill.</b></figcaption>)
