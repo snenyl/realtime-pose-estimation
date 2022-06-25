@@ -53,7 +53,7 @@ While the pallet orientation is directly from the estimated from the front plane
 
 </div>
 
-### Evaluation Demo
+### Evaluation Demo Video
 
 <div align="center">
 
@@ -75,15 +75,11 @@ While the pallet orientation is directly from the estimated from the front plane
 
 ## Requirements
 
-[//]: # (find_package&#40;realsense2 REQUIRED&#41;)
-
-[//]: # (find_package&#40;OpenCV REQUIRED&#41;)
-
-[//]: # (find_package&#40;InferenceEngine REQUIRED&#41;)
-
-[//]: # (find_package&#40;ngraph REQUIRED&#41;)
-
-[//]: # (find_package&#40;PCL REQUIRED &#41;)
+- realsense2
+- OpenCV (contrib)
+- InferenceEngine
+- ngraph
+- PCL
 
 ## Future Work
 
