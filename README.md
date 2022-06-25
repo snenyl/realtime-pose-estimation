@@ -46,20 +46,30 @@ While the pallet orientation is directly from the estimated from the front plane
 
 
 
-### Evaluation Demo of Moving and Standstill test using a AprilTag as ground truth 
+### Evaluation Demo 
 
 <div style="width: 100%; overflow: hidden;">
      <div style="width: 48%; float: left;">
 
+<center> 
+<h4>Moving test</h4>
+</center>
+
 [<img src="assets/april_tag_test_thumbnail.png" width="100%"> ](https://youtu.be/BfEB9jjqpF0)
-<figcaption align = "center"><b>Figure 2: Realtime pose estimation moving.</b></figcaption>
+
+[//]: # (<figcaption align = "center"><b>Figure 2: Realtime pose estimation moving.</b></figcaption>)
 
 
 </div>
-     <div style="margin-left: 52%;"> 
+     <div style="margin-left: 52%;">
+
+<center> 
+<h4>Standstill test</h4>
+</center>
 
 [<img src="assets/april_tag_test_thumbnail.png" width="100%">](https://youtu.be/-xybFGRdweY)
-<figcaption align = "center"><b>Figure 3: Realtime pose estimation standstill.</b></figcaption>
+
+[//]: # (<figcaption align = "center"><b>Figure 3: Realtime pose estimation standstill.</b></figcaption>)
 
 
 </div>
