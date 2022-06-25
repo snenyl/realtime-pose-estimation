@@ -9,7 +9,8 @@ This is part of the master’s thesis: "_A Machine Learning and Point Cloud Proc
 and Pose Estimation: Design, Implementation, and Validation_", available at [Link to thesis].
 
 By combining an RGB image and point cloud data is the system capable of detecting the object's pose by using object detection,
-RANSAC and vector operations. This work is based on 
+RANSAC and vector operations. This work is based on [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) algorithm and
+[Logistics Objects in Context (LOCO)](https://github.com/tum-fml/loco) dataset from 2021 and 2020, respectively.
 
 ## Demo Video
 
@@ -23,7 +24,7 @@ RANSAC and vector operations. This work is based on
 ## Object Detection
 
 The object detection algorithm is the YOLOX-S model from the [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) repository, which is transfer learned on the 
-[Logistics Objects in Context (LOCO)](https://github.com/tum-fml/loco) dataset. The final version is optimized with Intel OpenVINO and implemented together
+[LOCO](https://github.com/tum-fml/loco) dataset. The final version is optimized with [Intel OpenVINO](https://github.com/openvinotoolkit/openvino) and implemented together
 with the pose estimation in C++. [Table 1](#table_1) present the YOLOX-S training results for only pallet.
 
 <center>
@@ -53,7 +54,7 @@ While the pallet orientation is directly from the estimated from the front plane
 [<img src="assets/april_tag_test_moving_thumbnail.png" width="80%"> ](https://youtu.be/BfEB9jjqpF0)
 <figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Moving test evaluated with an AprilTag.</b></figcaption>
 
-
+&nbsp;
 
 [//]: # (<figcaption align = "center"><b>Figure 2: Realtime pose estimation moving.</b></figcaption>)
 
