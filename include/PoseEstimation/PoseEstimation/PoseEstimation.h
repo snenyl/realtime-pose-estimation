@@ -142,7 +142,7 @@ class PoseEstimation {  // TODO(simon) Add Doxygen documentation.
     kMaxConfidence = 0,
     kLargestBoundingBoxSize = 1,
     kLowestDetectionPosition = 2,
-    kLowestAndCenterPostition = 3,
+    kLowestAndCenterPosition = 3,
   };
 
   //! Aruco functions
