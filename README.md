@@ -6,7 +6,7 @@
 [//]: # (## Introduction)
 
 This is part of the master’s thesis: "_A Machine Learning and Point Cloud Processing based Approach for Object Detection 
-and Pose Estimation: Design, Implementation, and Validation_", available at [Link to thesis].
+and Pose Estimation: Design, Implementation, and Validation_", available at [TBD link to thesis].
 
 By combining an RGB image and point cloud data is the system capable of detecting the object's pose by using object detection,
 RANSAC and vector operations. This work is based on the [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) algorithm and
@@ -110,7 +110,7 @@ The distance from the pallet is two-meter for both tests. [Figure 4](#figure_4) 
 - Detecting pallet holes.
 - Make all the vector operations in a single matrix operation.
 - Add configuration.
-- 
+
 ## Known Issues<a name="known_issues"></a>
 
 - The image sometimes switch between RGB and BGR. Unknown if this is an issue in the code or in the imported rosbag.

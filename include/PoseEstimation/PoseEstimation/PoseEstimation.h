@@ -95,10 +95,10 @@ class PoseEstimation {  // TODO(simon) Add Doxygen documentation.
   static constexpr uint8_t third_ = 2;
   static constexpr uint8_t fourth_ = 3;
 
-  static constexpr uint8_t k_matrix_fx_id_ = 0;
-  static constexpr uint8_t k_matrix_fy_id_ = 0;
-  static constexpr uint8_t k_matrix_cx_id_ = 0;
-  static constexpr uint8_t k_matrix_cy_id_ = 0;
+//  static constexpr uint8_t k_matrix_fx_id_ = 0;  // TODO(simon) Implement.
+//  static constexpr uint8_t k_matrix_fy_id_ = 1;
+//  static constexpr uint8_t k_matrix_cx_id_ = 2;
+//  static constexpr uint8_t k_matrix_cy_id_ = 3;
 
   static constexpr uint8_t plane_normal_x_id_ = 0;
   static constexpr uint8_t plane_normal_y_id_ = 1;
@@ -109,7 +109,6 @@ class PoseEstimation {  // TODO(simon) Add Doxygen documentation.
   static constexpr uint8_t green_color_id_ = 1;
   static constexpr uint8_t blue_color_id_ = 2;
 
-  static constexpr uint8_t zero_ = 0;
   static constexpr float rad_to_deg_ = 57.2958;
 
 //  static const cv::Scalar(0, 0, 255) april_tag_marker_color_;// = {0,0,255}; //cv::Scalar(0,0,255);
@@ -138,6 +137,13 @@ class PoseEstimation {  // TODO(simon) Add Doxygen documentation.
   static constexpr char logger_file_save_relative_path_[] = "log/data_out.csv";  // TODO(simon) Unconst this and implement in configuration file.
   static constexpr uint64_t debug_print_after_seconds_ = 5;  // TODO(simon) Unconst this and implement in configuration file.
 
+  //! Pallet selection method
+  enum pallet_selection_method {  // TODO(simon) Implement pallet selection.
+    kMaxConfidence = 0,
+    kLargestBoundingBoxSize = 1,
+    kLowestDetectionPosition = 2,
+    kLowestAndCenterPostition = 3,
+  };
 
   //! Aruco functions
   void calculate_aruco();
