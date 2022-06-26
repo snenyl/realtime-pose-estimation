@@ -6,7 +6,7 @@
 [//]: # (## Introduction)
 
 This is part of the master’s thesis: "_A Machine Learning and Point Cloud Processing based Approach for Object Detection 
-and Pose Estimation: Design, Implementation, and Validation_", available at [Link to thesis].
+and Pose Estimation: Design, Implementation, and Validation_", available at [TBD link to thesis].
 
 By combining an RGB image and point cloud data is the system capable of detecting the object's pose by using object detection,
 RANSAC and vector operations. This work is based on the [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) algorithm and
@@ -20,6 +20,9 @@ RANSAC and vector operations. This work is based on the [YOLOX](https://github.c
 <figcaption align = "center"><b><a name="figure_1">Figure 1:</a> Real-time pallet selection with point cloud extraction.</b></figcaption>
 
 </div>
+
+[Figure 1](#figure_1) Is a video of the object detection filtering out the pallet of the point cloud. No pose estimation
+is performed as the Intel RealSense l515 does not detect the ground of the pallet. This is presented in [Future Work](#future_work).
 
 ## Object Detection
 
@@ -37,6 +40,8 @@ with the pose estimation in C++. [Table 1](#table_1) present the YOLOX-S trainin
 
 &nbsp;
 
+The YOLOX algorithm has been tested on synthetic pallets in Unreal Engine as shown in [Figure 2](#figure_2).
+
 <div align="center">
 
 [<img src="assets/unreal_synthetic_pallet.png" width="80%">](https://youtu.be/XEYaCEHEH3g)
@@ -47,15 +52,16 @@ with the pose estimation in C++. [Table 1](#table_1) present the YOLOX-S trainin
 </div>
 
 ## Pose Estimation
-The pose estimation is performed using the object detection algorithm and point cloud data. The object detection is only
-the relevant point of the pallet used where two RANSAC operations are performed. The first plane uses only ground floor 
-points, while the remaining pallet points are used for the second plane. A center vector from the camera is used to find
-the 3D position where the vector intersects the pallet front plane.
-While the pallet orientation is directly from the estimated from the front plane.
+The pose estimation is performed using the object detection algorithm and point cloud data.
 
+Object detection filters out only the relevant points of the pallet where two RANSAC operations are performed.
+The first plane uses only ground floor points, while the remaining pallet points are used for the second plane.
+A center vector from the camera is used to find the 3D position where the vector intersects the pallet front plane, 
+while the pallet orientation is directly from the estimated front plane. [Figure 3](#figure_3) explains the system 
+outputs in the PCL viewer.
 <div align="center">
 
-[<img src="assets/3d_explain.png" width="80%"> ](#figure_2)
+[<img src="assets/3d_explain.png" width="80%"> ](#figure_3)
 <figcaption align = "center"><b><a name="figure_3">Figure 3:</a> Vector and point explanation from the PCL 3D viewer.</b></figcaption>
 
 &nbsp;
@@ -63,6 +69,12 @@ While the pallet orientation is directly from the estimated from the front plane
 </div>
 
 ### Evaluation Demo Video
+
+The evaluation of the pose estimation system is done with an AprilTag (Type: 25h9), which can directly output its pose using
+functions from the OpenCV contrib library. A total of two tests have been performed. Moving test where the camera rotates
+around from 0 to -90 degrees and a standstill test where accuracy and precision are evaluated.
+The distance from the pallet is two-meter for both tests. [Figure 4](#figure_4) and [Figure 5](#figure_5) links to a video.
+
 
 <div align="center">
 
@@ -90,38 +102,15 @@ While the pallet orientation is directly from the estimated from the front plane
 - ngraph
 - PCL
 
-## Future Work
+## Future Work<a name="future_work"></a>
 
-- Improve the robustness of the system by implementing more checks, so the system is capable of failing softly.
-- Find the pose using only the pallet front plane, thus increasing the range of the system. 
+- Improve the robustness of the system.
+- Increasing the range of the pose estimation by using only a single plane and not requiring the ground plane.
+- Switch between using the ground plane and not.
 - Detecting pallet holes.
+- Make all the vector operations in a single matrix operation.
+- Add configuration.
 
-## License
+## Known Issues<a name="known_issues"></a>
 
-[//]: # (All content included in this Git repository is under the license:)
-
-[//]: # ()
-[//]: # (Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International)
-
-[//]: # ()
-[//]: # (You are free to:)
-
-[//]: # (* <b> Share </b> — copy and redistribute the material in any medium or format)
-
-[//]: # (* <b> Adapt </b> — remix, transform, and build upon the material)
-
-[//]: # ()
-[//]: # (Under the following terms:)
-
-[//]: # (* <b> Attribution </b> — You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.)
-
-[//]: # (* <b> NonCommercial </b> — You may not use the material for commercial purposes.)
-
-[//]: # (* <b> ShareAlike </b> — If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.)
-
-[//]: # (* <b> No additional restrictions </b> — You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.)
-
-
-
-<p align="center">
-<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+- The image sometimes switch between RGB and BGR. Unknown if this is an issue in the code or in the imported rosbag.

@@ -5,17 +5,9 @@
 
 PoseEstimation pose_estimation_object;
 
-void setup() {
-  pose_estimation_object.setup_pose_estimation();
-}
-
-void run() {
-  pose_estimation_object.run_pose_estimation();
-}
-
 int main() {
-  setup();
+  pose_estimation_object.setup_pose_estimation();
   while (true) {
-    run();
+    pose_estimation_object.run_pose_estimation();
   }
 }

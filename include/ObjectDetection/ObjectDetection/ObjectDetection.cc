@@ -353,7 +353,7 @@ object_detection_output ObjectDetection::get_detection() {
       720;  // TODO(simon) Set this as an input image_.rows  // TODO(simon) Magic number.
 
 
-  if (!detection_output_struct_.empty()) {
+  if (!detection_output_struct_.empty()) {  // TODO(simon) Implement pallet selection with enum pallet_selection_method from PoseEstimation.h
     for (int i = 0; i < detection_output_struct_.size(); ++i) {  // TODO(simon) Magic number.
 //      if (detection_output_struct_.at(i).confidence > max_confidence){
 //        max_confidence = detection_output_struct_.at(i).confidence; // TODO(simon) Select for max confidence
@@ -367,7 +367,7 @@ object_detection_output ObjectDetection::get_detection() {
 //        max_areal = detection_output_struct_.at(i).y + detection_output_struct_.at(i).height; // TODO(simon) Select for lowest detected position
 //        iterator_max_confidence = i;
 //      }
-      if (box_filtering(image_width, image_height, detection_output_struct_, i) > max_bbox_score) {
+      if (box_filtering(image_width, image_height, detection_output_struct_, i) > max_bbox_score) {// TODO(simon) Select for lowest detected position and most center.
         max_bbox_score = box_filtering(image_width, image_height, detection_output_struct_, i);
         iterator_max_confidence = i;
       }
