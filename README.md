@@ -110,6 +110,10 @@ The distance from the pallet is two-meter for both tests. [Figure 4](#figure_4) 
 - Detecting pallet holes.
 - Make all the vector operations in a single matrix operation.
 - Add configuration.
+- 
+## Known Issues<a name="known_issues"></a>
+
+- The image sometimes switch between RGB and BGR. Unknown if this is an issue in the code or in the imported rosbag.
 
 ## License
 

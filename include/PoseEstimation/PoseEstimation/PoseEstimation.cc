@@ -28,22 +28,25 @@ void PoseEstimation::run_pose_estimation() {
     std::cout << "cloud_pallet_->size(): " << cloud_pallet_->size() << std::endl;
   }
 
-  if (detection_output_struct_.width > 10 &&  // TODO(simon) Magic number.
-      detection_output_struct_.height > 10 &&  // TODO(simon) Magic number.
-      wait_with_ransac_for_ > 10) {  // TODO(simon) Magic number.
+  if (detection_output_struct_.width > minimum_object_detection_width_pixels_ &&
+      detection_output_struct_.height > minimum_object_detection_height_pixels_ &&
+      wait_with_ransac_for_ > minimum_iterations_before_ransac_) {
     calculate_ransac();
   }
-  if (ransac_model_coefficients_.size() > 3) {  // TODO(simon) Magic number.
+  if (ransac_model_coefficients_.size() > minimum_ransac_coefficients_) {
     calculate_pose_vector();
   }
-  wait_with_ransac_for_ += 1;  // TODO(simon) Magic number.
+  wait_with_ransac_for_++;
 
   view_pointcloud();
 
   const int w = image.as<rs2::video_frame>().get_width();
   const int h = image.as<rs2::video_frame>().get_height();
 
-  cv::Mat cv_image(cv::Size(w, h), CV_8UC3, (void *) image.get_data(), cv::Mat::AUTO_STEP);  // TODO(simon) Using C-style cast.  Use reinterpret_cast<void *>(...) instead.
+  cv::Mat cv_image(cv::Size(w, h),
+                   CV_8UC3,
+                   (void *) image.get_data(),  // TODO(simon) Using C-style cast.  Use reinterpret_cast<void *>(...) instead.
+                   cv::Mat::AUTO_STEP);
   cv::cvtColor(cv_image, cv_image, cv::COLOR_BGR2RGB);
 
   image_ = cv_image;
@@ -53,16 +56,14 @@ void PoseEstimation::run_pose_estimation() {
   calculate_pose();
 
   log_data(image.get_frame_number());
-  cv::imshow("Output", cv_image);
-  cv::waitKey(1);  // TODO(simon) Magic number.
+  cv::imshow(opencv_image_window_name_, cv_image);
+  cv::waitKey(cv_waitkey_delay_);
 
   ransac_model_coefficients_.clear();
 }
 
 void PoseEstimation::setup_pose_estimation() {
-  rosbag_path_ = std::filesystem::current_path().parent_path()
-      / "data/20220327_162128_2meter_with_light_standing_aruco_90_deg_slow_move.bag";  // TODO(simon) Get rosbag path as a static constexpr variable in PoseEstimation.h
-
+  rosbag_path_ = std::filesystem::current_path().parent_path() / rosbag_relative_path_;
 
   if (load_from_rosbag) {
     std::cout << "Loaded rosbag: " << rosbag_path_ << std::endl;
@@ -72,7 +73,7 @@ void PoseEstimation::setup_pose_estimation() {
     auto dev = profile.get_device();
 
     if (auto p = dev.as<rs2::playback>()) {
-      p.set_real_time(0);  //! Doesn't skip frames.
+      p.set_real_time(realsense_skip_frames_);
     }
 
   } else if (!load_from_rosbag) {
@@ -87,12 +88,12 @@ void PoseEstimation::setup_pose_estimation() {
 
   set_camera_parameters();
 
-  object_detection_object_.set_model_path(
-      "models/yolox_s_only_pallet_294epoch_o10/yolox_s_only_pallet_294epoch_o10.xml");
-  object_detection_object_.set_object_detection_settings(0.3,
-                                                         0.1);  //! Får med hele sekvensen: 0.3,0.1 | 0.3,0.75  // TODO(simon) Magic number.
+  object_detection_object_.set_model_path(object_detection_model_path_);
+  object_detection_object_.set_object_detection_settings(object_detection_nms_threshold_,
+                                                         object_detection_bbox_conf_threshold_);
   object_detection_object_.setup_object_detection();
-  pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));
+  pcl::visualization::PCLVisualizer::Ptr
+      viewer(new pcl::visualization::PCLVisualizer(pcl_window_name_));
   viewer_ = viewer;
 
   std::cout << "Setup" << std::endl;
@@ -106,7 +107,7 @@ void PoseEstimation::calculate_aruco() {
                            parameters_,
                            rejectedCandidates_);
 
-  if (markerCorners_.size() > 0) {  // TODO(simon) Magic number.
+  if (markerCorners_.size() > minimum_marker_corners_) {
     cv::drawMarker(image_,
                    markerCorners_.at(0).at(0),
                    cv::Scalar(0, 0, 255));  // TODO(simon) Magic number.
@@ -125,7 +126,7 @@ void PoseEstimation::calculate_aruco() {
 void PoseEstimation::calculate_pose() {
   std::vector<cv::Vec3d> rvecs, tvecs, object_points;
   cv::aruco::estimatePoseSingleMarkers(markerCorners_,
-                                       0.535,
+                                       april_tag_marker_length_meter_,
                                        example_camera_matrix_,
                                        example_dist_coefficients_,
                                        rvecs,
@@ -177,7 +178,7 @@ void PoseEstimation::calculate_pose() {
                         example_dist_coefficients_,
                         rvecs,
                         tvecs,
-                        0.535 / 2);  // TODO(simon) Magic number.
+                        april_tag_marker_length_meter_ / 2);  // TODO(simon) Magic number.
   }
 }
 
@@ -372,7 +373,8 @@ void PoseEstimation::view_pointcloud() {
         -ground_truth_vector_converted.at(2);  // TODO(simon) Magic number.
 
     if (enable_debug_mode_) {
-      for (int i = 0; i < converted_ground_truth_vector_.size(); ++i) {  // TODO(simon) Magic number.
+      for (int i = 0; i < converted_ground_truth_vector_.size();
+           ++i) {  // TODO(simon) Magic number.
         std::cout << "converted_ground_truth_vector_.at(" << i << ")"
                   << converted_ground_truth_vector_.at(i) << std::endl;
       }
@@ -399,37 +401,41 @@ void PoseEstimation::view_pointcloud() {
   }
 
   if (!square_frustum_detection_points_.empty()) {
-    viewer_->addLine(pcl::PointXYZ(0, 0, 0),  // TODO(simon) Magic number.
+    viewer_->addLine(pcl_point_origin_xyz_,
                      square_frustum_detection_points_.at(0),
-                     255,
-                     255,
-                     0,  // TODO(simon) Magic number.
-                     "line",
-                     0);  // TODO(simon) Magic number.
-    viewer_->addLine(pcl::PointXYZ(0, 0, 0),  // TODO(simon) Magic number.
+                     selected_point_color_rgb_[red_color_],
+                     selected_point_color_rgb_[green_color_],
+                     selected_point_color_rgb_[blue_color_],
+                     top_right_detection_corner_vector_name_,
+                     viewport_id_);
+    viewer_->addLine(pcl_point_origin_xyz_,
                      square_frustum_detection_points_.at(1),
-                     255,
-                     255,
-                     0,  // TODO(simon) Magic number.
-                     "line1",
-                     0);  // TODO(simon) Magic number.
-    viewer_->addLine(pcl::PointXYZ(0, 0, 0),  // TODO(simon) Magic number.
+                     selected_point_color_rgb_[red_color_],
+                     selected_point_color_rgb_[green_color_],
+                     selected_point_color_rgb_[blue_color_],
+                     top_left_detection_corner_vector_name_,
+                     viewport_id_);
+    viewer_->addLine(pcl_point_origin_xyz_,
                      square_frustum_detection_points_.at(2),
-                     255,
-                     255,
-                     0,  // TODO(simon) Magic number.
-                     "line2",
-                     0);  // TODO(simon) Magic number.
-    viewer_->addLine(pcl::PointXYZ(0, 0, 0),  // TODO(simon) Magic number.
+                     selected_point_color_rgb_[red_color_],
+                     selected_point_color_rgb_[green_color_],
+                     selected_point_color_rgb_[blue_color_],
+                     bottom_right_detection_corner_vector_name_,
+                     viewport_id_);
+    viewer_->addLine(pcl_point_origin_xyz_,
                      square_frustum_detection_points_.at(3),
-                     255,
-                     255,
-                     0,  // TODO(simon) Magic number.
-                     "line3",
-                     0);  // TODO(simon) Magic number.
-    viewer_->addLine(pcl::PointXYZ(0, 0, 0),  // TODO(simon) Magic number.
-                     center_frustum_, 255, 0, 0,  // TODO(simon) Magic number.
-                     "line_center", 0);  // TODO(simon) Magic number.
+                     selected_point_color_rgb_[red_color_],
+                     selected_point_color_rgb_[green_color_],
+                     selected_point_color_rgb_[blue_color_],
+                     bottom_left_detection_corner_vector_name_,
+                     viewport_id_);
+    viewer_->addLine(pcl_point_origin_xyz_,
+                     center_frustum_,
+                     center_frustom_vector_color_rgb_[red_color_],
+                     center_frustom_vector_color_rgb_[green_color_],
+                     center_frustom_vector_color_rgb_[blue_color_],
+                     center_detection_vector_name_,
+                     viewport_id_);
   }
 
   if (ransac_model_coefficients_.size() > 2) {  // TODO(simon) Magic number.
@@ -666,9 +672,10 @@ void PoseEstimation::calculate_ransac() {
     segmentation.setMaxIterations(500);  // TODO(simon) Magic number.
     segmentation.setDistanceThreshold(0.1);  // TODO(simon) Magic number.
 
-    if (enable_debug_mode_){
+    if (enable_debug_mode_) {
       std::cout << "Inbetween " << std::endl;
-      std::cout << "input_cloud_with_normals size: " << input_cloud_with_normals->size() << std::endl;
+      std::cout << "input_cloud_with_normals size: " << input_cloud_with_normals->size()
+                << std::endl;
     }
 
     segmentation.setEpsAngle(0.1);  // TODO(simon) Magic number.
@@ -717,7 +724,6 @@ void PoseEstimation::calculate_ransac() {
       std::cout << "extracted_cloud_with_normals_ size: " << extracted_cloud_with_normals_->size()
                 << std::endl;
     }
-
 
     second_segmentation.setEpsAngle(0.1);  // TODO(simon) Magic number.
     second_segmentation.setInputCloud(extracted_cloud_with_normals_);
@@ -786,7 +792,8 @@ void PoseEstimation::calculate_pose_vector() {
     std::cout << "plane_vector_intersect: " << plane_vector_intersect << std::endl;
   }
 
-  intersect_point_.values[0] = plane_vector_intersect.x();  // plane_vector_intersect  // TODO(simon) Magic number.
+  intersect_point_.values[0] =
+      plane_vector_intersect.x();  // plane_vector_intersect  // TODO(simon) Magic number.
   intersect_point_.values[1] = plane_vector_intersect.y();  // TODO(simon) Magic number.
   intersect_point_.values[2] = plane_vector_intersect.z();  // TODO(simon) Magic number.
   intersect_point_.values[3] = 0.1;  // TODO(simon) Magic number.
