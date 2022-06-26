@@ -92,9 +92,11 @@ While the pallet orientation is directly from the estimated from the front plane
 
 ## Future Work
 
-- Improve the robustness of the system by implementing more checks, so the system is capable of failing softly.
-- Find the pose using only the pallet front plane, thus increasing the range of the system. 
+- Improve the robustness of the system.
+- Increasing the range of the pose estimation by using only a single plane and not requiring the ground plane.
+- Switch between using the ground plane and not.
 - Detecting pallet holes.
+- Make all the vector operations in a single matrix operation.
 
 ## License
 
