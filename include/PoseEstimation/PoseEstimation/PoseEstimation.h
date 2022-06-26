@@ -51,44 +51,74 @@ class PoseEstimation {  // TODO(simon) Add Doxygen documentation.
   static constexpr uint8_t minimum_marker_corners_ = 0;
 
   static constexpr uint8_t cv_waitkey_delay_ = 1;
+  static constexpr uint8_t pcl_spin_time_ = 1;
 
-  static constexpr uint8_t x_position_ = 0;
-  static constexpr uint8_t y_position_ = 1;
-  static constexpr uint8_t z_position_ = 2;
+  static constexpr uint8_t x_position_id_ = 0;
+  static constexpr uint8_t y_position_id_ = 1;
+  static constexpr uint8_t z_position_id_ = 2;
+  static constexpr uint8_t end_x_position_id_ = 3;
+  static constexpr uint8_t end_y_position_id_ = 4;
+  static constexpr uint8_t end_z_position_id_ = 5;
+
+  static constexpr uint8_t iterations_start_at_ = 0;
 
   static constexpr bool realsense_skip_frames_ = false;
   static constexpr float object_detection_nms_threshold_ = 0.3;  // TODO(simon) Unconst this and implement in configuration file.
   static constexpr float object_detection_bbox_conf_threshold_ = 0.1;  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr uint8_t number_of_object_detection_corner_vectors_ = 4;
 
-  static constexpr char object_detection_model_path_[] =
-      "models/yolox_s_only_pallet_294epoch_o10/yolox_s_only_pallet_294epoch_o10.xml";  // TODO(simon) Unconst this and implement in configuration file.  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr char object_detection_model_relative_path_[] =
+      "models/yolox_s_only_pallet_294epoch_o10/yolox_s_only_pallet_294epoch_o10.xml";  // TODO(simon) Unconst this and implement in configuration file.
 
-  static constexpr char pcl_window_name_[] = "3D Viewer";
-  static constexpr uint8_t viewport_id_ = 0;
+  static constexpr char pcl_window_name_[] = "3D Viewer";  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr uint8_t pcl_viewport_id_ = 0;
+  static constexpr double pcl_background_color_rgb_[3] = {0, 0, 0};  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr double pcl_initial_camera_position_pos_xyz_view_xyz_up_xyz_[9] = {0, 10, 0, 0, 0, 0, 0, 0, 1};  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr double pcl_coordinate_system_size_ = 1;  // TODO(simon) Unconst this and implement in configuration file.
   static constexpr char top_right_detection_corner_vector_name_[] = "line";
   static constexpr char top_left_detection_corner_vector_name_[] = "line1";
   static constexpr char bottom_right_detection_corner_vector_name_[] = "line2";
   static constexpr char bottom_left_detection_corner_vector_name_[] = "line3";
   static constexpr char center_detection_vector_name_[] = "line_center";
-
+  static constexpr char ground_truth_vector_name_[] = "ground_truth";
+  static constexpr char apriltag_coordinate_system_reference_name_[] = "apriltag";
+  static constexpr char ground_plane_reference_name_[] = "ground_plane";
+  static constexpr char pallet_plane_reference_name_[] = "pallet_plane";
+  static constexpr char pose_vector_reference_name_[] = "pose_vector";
   static constexpr char opencv_image_window_name_[] = "Output";
+
+  static constexpr float pcl_frustum_filter_near_plane_distance_meter_ = 0;  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr float pcl_frustum_filter_far_plane_distance_meter_ = 15;  // TODO(simon) Unconst this and implement in configuration file.
 
   static constexpr uint8_t first_ = 0;
   static constexpr uint8_t second_ = 1;
   static constexpr uint8_t third_ = 2;
   static constexpr uint8_t fourth_ = 3;
 
-  static constexpr uint8_t red_color_ = 0;
-  static constexpr uint8_t green_color_ = 1;
-  static constexpr uint8_t blue_color_ = 2;
+  static constexpr uint8_t k_matrix_fx_id_ = 0;
+  static constexpr uint8_t k_matrix_fy_id_ = 0;
+  static constexpr uint8_t k_matrix_cx_id_ = 0;
+  static constexpr uint8_t k_matrix_cy_id_ = 0;
+
+  static constexpr uint8_t plane_normal_x_id_ = 0;
+  static constexpr uint8_t plane_normal_y_id_ = 1;
+  static constexpr uint8_t plane_normal_z_id_ = 2;
+  static constexpr uint8_t plane_hessian_component_id_ = 3;
+
+  static constexpr uint8_t red_color_id_ = 0;
+  static constexpr uint8_t green_color_id_ = 1;
+  static constexpr uint8_t blue_color_id_ = 2;
 
   static constexpr uint8_t zero_ = 0;
+  static constexpr float rad_to_deg_ = 57.2958;
 
-//  static const auto april_tag_marker_color_ = cv::Scalar(0,0,255);
+//  static const cv::Scalar(0, 0, 255) april_tag_marker_color_;// = {0,0,255}; //cv::Scalar(0,0,255);
   static constexpr float april_tag_marker_length_meter_ = 0.535;  // TODO(simon) Unconst this and implement in configuration file.
   pcl::PointXYZ pcl_point_origin_xyz_ = pcl::PointXYZ(0, 0, 0);
-  static constexpr double selected_point_color_rgb_[3] = {255,255,0};
-  static constexpr double center_frustom_vector_color_rgb_[3] = {255,0,0};
+  static constexpr double selected_point_color_rgb_[3] = {255,255,0};  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr double center_frustum_vector_color_rgb_[3] = {255, 0, 0};  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr double ground_truth_vector_color_rgb_[3] = {0,0,255};  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr double pose_vector_color_rgb_[3] = {0,255,0};  // TODO(simon) Unconst this and implement in configuration file.
 
   static constexpr double ransac_eps_angle_radians_ = 0.1;  // TODO(simon) Unconst this and implement in configuration file.
   static constexpr uint16_t ransac_max_iterations_ = 50;  // TODO(simon) Unconst this and implement in configuration file.
@@ -98,11 +128,16 @@ class PoseEstimation {  // TODO(simon) Add Doxygen documentation.
   static constexpr uint16_t sample_surface_normal_sample_size_ = 50;  // TODO(simon) Unconst this and implement in configuration file.
   static constexpr float sample_surface_normal_ratio_ = 0.5;  // TODO(simon) Unconst this and implement in configuration file.
 
-  static constexpr uint16_t minimum_points_for_ransac_ = 10;
+  static constexpr uint16_t minimum_points_for_ransac_ = 10; // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr uint16_t minimum_points_for_sampling_surface_normals_ = 10; // TODO(simon) Unconst this and implement in configuration file.
 
   static constexpr uint16_t maximum_iterations_for_segmentation_ = 500;  // TODO(simon) Unconst this and implement in configuration file.
   static constexpr double segmentation_distance_threshold_meter_ = 0.1;  // TODO(simon) Unconst this and implement in configuration file.
   static constexpr double segmentation_eps_angle_radians_ = 0.1;  // TODO(simon) Unconst this and implement in configuration file.
+
+  static constexpr char logger_file_save_relative_path_[] = "log/data_out.csv";  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr uint64_t debug_print_after_seconds_ = 5;  // TODO(simon) Unconst this and implement in configuration file.
+
 
   //! Aruco functions
   void calculate_aruco();
@@ -196,7 +231,7 @@ class PoseEstimation {  // TODO(simon) Add Doxygen documentation.
   std::vector<float> second_ransac_model_coefficients_;
   pcl::PointIndices::Ptr inliers_;
   std::vector<int> frustum_filter_inliers_;
-  double zed_k_matrix_[4] = {907.114, 907.605, 662.66,
+  double zed_k_matrix_[4] = {907.114, 907.605, 662.66,  // TODO(simon) Not full K-matrix.
                              367.428};  // TODO(simon) Get K matrix from camera. This is from Realsense l515. (fx, fy, cx, cy)
   std::vector<Eigen::Vector2d> detection_from_image_center_;
   double detection_vector_scale_ = 3;
