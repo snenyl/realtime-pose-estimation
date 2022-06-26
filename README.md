@@ -114,8 +114,3 @@ The distance from the pallet is two-meter for both tests. [Figure 4](#figure_4) 
 ## Known Issues<a name="known_issues"></a>
 
 - The image sometimes switch between RGB and BGR. Unknown if this is an issue in the code or in the imported rosbag.
-
-## License
-
-<p align="center">
-<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
