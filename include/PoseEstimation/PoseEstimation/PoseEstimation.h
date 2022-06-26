@@ -41,7 +41,36 @@ class PoseEstimation {  // TODO(simon) Add Doxygen documentation.
  private:
   //! Variables
   // TODO(simon) Add magic numbers from PoseEstimation.cc here with "static constexpr" as prefix.
+  static constexpr uint8_t x_position_ = 0;
+  static constexpr uint8_t y_position_ = 1;
+  static constexpr uint8_t z_position_ = 2;
 
+  static constexpr uint8_t real_time_ = 0;
+
+  static constexpr uint8_t first_ = 0;
+  static constexpr uint8_t second_ = 1;
+  static constexpr uint8_t third_ = 2;
+  static constexpr uint8_t fourth_ = 3;
+  
+  static constexpr uint8_t zero_ = 0;
+
+//  static const auto april_tag_marker_color_ = cv::Scalar(0,0,255);
+  static constexpr float april_tag_marker_length_ = 0.535;  // TODO(simon) Unconst this and implement in configuration file.
+  pcl::PointXYZ origo_ = pcl::PointXYZ(0,0,0);
+  
+  static constexpr double ransac_eps_angle_radians_ = 0.1;  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr uint16_t ransac_max_iterations_ = 50;  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr double first_ransac_distance_threshold_meter_ = 0.001;  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr double second_ransac_distance_threshold_meter_ = 0.0001;  // TODO(simon) Unconst this and implement in configuration file.
+
+  static constexpr uint16_t sample_surface_normal_sample_size_ = 50;  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr float sample_surface_normal_ratio_ = 0.5;  // TODO(simon) Unconst this and implement in configuration file.
+
+  static constexpr uint16_t minimum_points_for_ransac_ = 10;
+
+  static constexpr uint16_t maximum_iterations_for_segmentation_ = 500;  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr double segmentation_distance_threshold_meter_ = 0.1;  // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr double segmentation_eps_angle_radians_ = 0.1;  // TODO(simon) Unconst this and implement in configuration file.
 
   //! Aruco functions
   void calculate_aruco();

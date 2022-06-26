@@ -786,8 +786,7 @@ void PoseEstimation::calculate_pose_vector() {
     std::cout << "plane_vector_intersect: " << plane_vector_intersect << std::endl;
   }
 
-  intersect_point_.values[0] =
-      plane_vector_intersect.x();  // plane_vector_intersect  // TODO(simon) Magic number.
+  intersect_point_.values[0] = plane_vector_intersect.x();  // plane_vector_intersect  // TODO(simon) Magic number.
   intersect_point_.values[1] = plane_vector_intersect.y();  // TODO(simon) Magic number.
   intersect_point_.values[2] = plane_vector_intersect.z();  // TODO(simon) Magic number.
   intersect_point_.values[3] = 0.1;  // TODO(simon) Magic number.
