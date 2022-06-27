@@ -5,10 +5,10 @@
 
 void ObjectDetection::setup_object_detection() {
   input_model_path_ = std::filesystem::current_path().parent_path() / model_path_;
-  num_classes_ = 1;  // TODO(simon) Magic number.
-  input_dimensions_.width = 640;  // TODO(simon) Magic number.
-  input_dimensions_.height = 640;  // TODO(simon) Magic number.
-  device_name_ = "CPU";
+  num_classes_ = number_of_classes_;
+  input_dimensions_.width = network_input_dimensions_wh_[width_id_];
+  input_dimensions_.height = network_input_dimensions_wh_[height_id_];
+  device_name_ = inference_device_name_;
 
   std::cout << input_model_path_ << std::endl;
 
@@ -106,7 +106,7 @@ void ObjectDetection::decode_outputs(const float *prob,
                                      const int img_w,
                                      const int img_h) {
   std::vector<Object> proposals;
-  std::vector<int> strides = {8, 16, 32};  // TODO(simon) Magic number.
+  std::vector<int> strides = inference_stride_;
   std::vector<GridAndStride> grid_strides;
 
   generate_grids_and_stride(input_dimensions_.width,
@@ -294,7 +294,7 @@ void ObjectDetection::draw_objects(const cv::Mat &bgr, const std::vector<Object>
   for (size_t i = 0; i < objects.size(); i++) {   // TODO(simon) Magic number.
     const Object &obj = objects[i];
 
-    cv::Scalar color = cv::Scalar(100, 100, 100);  // TODO(simon) Magic number.
+    cv::Scalar color = bounding_box_color_;
     float c_mean = cv::mean(color)[0];  // TODO(simon) Magic number.
     cv::Scalar txt_color;
     if (c_mean > 0.5) {  // TODO(simon) Magic number.

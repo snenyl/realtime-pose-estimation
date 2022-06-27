@@ -43,6 +43,20 @@ struct object_detection_output {
 
 class ObjectDetection {  // TODO(simon) Add Doxygen documentation.
  public:
+  //! Variables
+
+  static constexpr uint16_t number_of_classes_ = 1; // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr uint16_t network_input_dimensions_wh_[2] = {640, 640}; // TODO(simon) Unconst this and implement in configuration file.
+  static constexpr char inference_device_name_[] = "CPU"; // TODO(simon) Unconst this and implement in configuration file.
+
+  const std::vector<int> inference_stride_ = {8, 16, 32};  // TODO(simon) Unconst this and implement in configuration file.
+  const cv::Scalar bounding_box_color_ = {100, 100, 100};  // TODO(simon) Unconst this and implement in configuration file.
+
+
+  static constexpr uint8_t width_id_ = 0;
+  static constexpr uint8_t height_id_ = 1;
+
+  //! Functions
   void setup_object_detection();
 
   void run_object_detection(cv::Mat &image);  // TODO(simon) Check if this is a non-const reference. If so, make const or use a pointer.
