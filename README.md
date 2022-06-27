@@ -29,13 +29,13 @@ estimation in C++. A total of two models has been created from the pallet datase
 YOLOX-S training results for only pallet and pallet void.
 
 <center>
+<figcaption align = "center"><b> <a name="table_1">Table 1:</a> Training results for only_pallet and pallet_void from the LOCO dataset, trained on an NVIDIA GeForce RTX 3060 Laptop GPU.</b></figcaption>
 
 |      **Model**      | **Parameters** | **Dataset** | **$AP$** | **$AP_{50}$** | **$AP_{75}$** | **$AP_S$** | **$AP_M$** | **$AP_L$** | **Inference time** |
 |:-------------------:|:--------------:|:-----------:|:--------:|:-------------:|:--------------:|:----------:|:----------:|:----------:|:------------------:|
 | yolox_s_only_pallet |      9.0 M     |     LOCO    |  24.0%   |     53.2%     |     17.2%      |    7.9%    |   24.3%    |   40.6%    |       6.74 ms      |
 | yolox_s_pallet_void |      9.0 M     |     LOCO    |   0.2%   |     0.2%      |      0.2%      |    0.0%    |    0.7%    |    0.0%    |       6.96 ms      |
 
-<figcaption align = "center"><b> <a name="table_1">Table 1:</a> Training results for only_pallet and pallet_void from the LOCO dataset, trained on an NVIDIA GeForce RTX 3060 Laptop GPU.</b></figcaption>
 </center>
 
 &nbsp;
@@ -55,7 +55,8 @@ total of 1 006 images and 10 684 annotations.
 &nbsp;
 
 </div>
-[Move the synthetic pallet to other space, methods for improving the model.]
+
+[//]: # ([Move the synthetic pallet to other space, methods for improving the model.])
 
 ### Only pallet void detection model
 
@@ -63,7 +64,7 @@ total of 1 006 images and 10 684 annotations.
 <div align="center">
 
 [<img src="assets/pallet_void_inference.png" width="80%">](https://youtu.be/AV6SxjbsBLk)
-<figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Pallet void inference video test using YOLOX-S trained on a pallet void labeled LOCO dataset.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_3">Figure 3:</a> Pallet void inference video test using YOLOX-S trained on a pallet void labeled LOCO dataset.</b></figcaption>
 
 &nbsp;
 
@@ -72,7 +73,7 @@ total of 1 006 images and 10 684 annotations.
 A total of 1900 pallet holes annotations have been manually annotated, refereed to as voids,
 split into 1261 training and 639 validation annotations for training. The ML algorithm
 manage to detect pallet holes, however with a very low confidence bellow 1%, as shown
-in Figure 7.8. [CVAT support auto labeling with OpenVINO](https://openvinotoolkit.github.io/cvat/docs/manual/advanced/automatic-annotation/) that speed up the labeling 
+in [Figure 3](#figure_3). [CVAT support auto labeling with OpenVINO](https://openvinotoolkit.github.io/cvat/docs/manual/advanced/automatic-annotation/) that speed up the labeling 
 process to make the model more confident.
 
 [//]: # (Since the pallet void dataset only contain)
@@ -89,12 +90,12 @@ The pose estimation is performed using the object detection algorithm and point 
 Object detection filters out only the relevant points of the pallet where two RANSAC operations are performed.
 The first plane uses only ground floor points, while the remaining pallet points are used for the second plane.
 A center vector from the camera is used to find the 3D position where the vector intersects the pallet front plane, 
-while the pallet orientation is directly from the estimated front plane. [Figure 3](#figure_3) explains the system 
+while the pallet orientation is directly from the estimated front plane. [Figure 4](#figure_4) explains the system 
 outputs in the PCL viewer.
 <div align="center">
 
-[<img src="assets/3d_explain.png" width="80%"> ](#figure_3)
-<figcaption align = "center"><b><a name="figure_3">Figure 3:</a> Vector and point explanation from the PCL 3D viewer.</b></figcaption>
+[<img src="assets/3d_explain.png" width="80%"> ](#figure_4)
+<figcaption align = "center"><b><a name="figure_4">Figure 4:</a> Vector and point explanation from the PCL 3D viewer.</b></figcaption>
 
 &nbsp;
 
@@ -105,22 +106,25 @@ outputs in the PCL viewer.
 The evaluation of the pose estimation system is done with an AprilTag (Type: 25h9), which can directly output its pose using
 functions from the OpenCV contrib library. A total of two tests have been performed. Moving test where the camera rotates
 around from 0 to -90 degrees and a standstill test where accuracy and precision are evaluated.
-The distance from the pallet is two-meter for both tests. [Figure 4](#figure_4) and [Figure 5](#figure_5) links to a video.
+The distance from the pallet is two-meter for both tests. [Figure 5](#figure_5) and [Figure 6](#figure_6) links to a video.
 
 
 <div align="center">
 
 [<img src="assets/april_tag_test_moving_thumbnail.png" width="80%"> ](https://youtu.be/BfEB9jjqpF0)
-<figcaption align = "center"><b><a name="figure_4">Figure 4:</a> Real-time moving test evaluated with an AprilTag.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_5">Figure 4:</a> Real-time moving test evaluated with an AprilTag.</b></figcaption>
 
 &nbsp;
 
 [<img src="assets/april_tag_test_thumbnail.png" width="80%">](https://youtu.be/-xybFGRdweY)
-<figcaption align = "center"><b><a name="figure_5">Figure 5:</a> Real-time standstill test evaluated with an AprilTag.</b></figcaption>
+<figcaption align = "center"><b><a name="figure_6">Figure 5:</a> Real-time standstill test evaluated with an AprilTag.</b></figcaption>
 
 </div>
 
 ## Requirements
+
+<center>
+<figcaption align = "center"><b> <a name="table_2">Table 2:</a> Required library packages.</b></figcaption>
 
 | **Package**     | **Minimum version** | **Info**                                                                                |
 |-----------------|---------------------|-----------------------------------------------------------------------------------------|
@@ -129,6 +133,12 @@ The distance from the pallet is two-meter for both tests. [Figure 4](#figure_4) 
 | InferenceEngine | 2021.4.752          | From the [OpenVINO toolkit](https://github.com/openvinotoolkit/openvino).               |
 | ngraph          | N/A                 | Required for InferenceEngine, and part of openVINO.                                     |
 | PCL             | 1.10.0              | From [PointCloudLibrary/pcl](https://github.com/PointCloudLibrary/pcl).                 |
+
+</center>
+
+
+
+
 ## Future Work<a name="future_work"></a>
 
 - Improve the robustness of the system by implementing 
