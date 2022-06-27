@@ -1,11 +1,12 @@
 <div align="center"><h1>Real-time Pose Estimation</h1> </div>
 
-This is part of the master’s thesis: "_A Machine Learning and Point Cloud Processing based Approach for Object Detection 
+This is part of the master's thesis: "_A Machine Learning and Point Cloud Processing based Approach for Object Detection
 and Pose Estimation: Design, Implementation, and Validation_", available at [TBD link to thesis].
 
-By combining an RGB image and point cloud data is the system capable of detecting the object's pose by using object detection,
-RANSAC and vector operations. This work is based on the [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) algorithm and
+By combining an RGB image and point cloud data is, the system capable of detecting the object's pose by using object detection,
+RANSAC and vector operations within the set requirements. This work is based on the [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) algorithm and
 [Logistics Objects in Context (LOCO)](https://github.com/tum-fml/loco) dataset from 2021 and 2020, respectively.
+
 
 ## Demo Video
 
@@ -41,7 +42,10 @@ YOLOX-S training results for only pallet and pallet void.
 
 ### Only pallet detection model
 
-The YOLOX algorithm has been tested on synthetic pallets in Unreal Engine as shown in [Figure 2](#figure_2).
+
+A total of 4 485 images are used for training, containing 86 318 annotations of only pallets,
+while the validation dataset has a total of 1 006 images and 10 684 annotations. while the validation dataset has a 
+total of 1 006 images and 10 684 annotations.
 
 <div align="center">
 
@@ -51,9 +55,33 @@ The YOLOX algorithm has been tested on synthetic pallets in Unreal Engine as sho
 &nbsp;
 
 </div>
+[Move the synthetic pallet to other space, methods for improving the model.]
 
 ### Only pallet void detection model
 
+
+<div align="center">
+
+[<img src="assets/pallet_void_inference.png" width="80%">](https://youtu.be/AV6SxjbsBLk)
+<figcaption align = "center"><b><a name="figure_2">Figure 2:</a> Pallet void inference video test using YOLOX-S trained on a pallet void labeled LOCO dataset.</b></figcaption>
+
+&nbsp;
+
+</div>
+
+A total of 1900 pallet holes annotations have been manually annotated, refereed to as voids,
+split into 1261 training and 639 validation annotations for training. The ML algorithm
+manage to detect pallet holes, however with a very low confidence bellow 1%, as shown
+in Figure 7.8. [CVAT support auto labeling with OpenVINO](https://openvinotoolkit.github.io/cvat/docs/manual/advanced/automatic-annotation/) that speed up the labeling 
+process to make the model more confident.
+
+[//]: # (Since the pallet void dataset only contain)
+
+[//]: # (1900 pallet void annotations compared to 120 000 pallet annotations in the complete LOCO)
+
+[//]: # (dataset [34], is it recommended by [59] to do more augmentation during training to improve)
+
+[//]: # (the model.)
 
 ## Pose Estimation
 The pose estimation is performed using the object detection algorithm and point cloud data.
