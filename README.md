@@ -34,9 +34,11 @@ YOLOX-S training results for only pallet and pallet void.
 
 <center>
 
-|      **Model**      | **Parameters** | **Dataset** | **$AP$** | **$AP50$** | **$AP75$** | **$AP_S$** | **$AP_M$** | **$AP_L$** | **Inference time** |
-|:-------------------:|:--------------:|:-----------:|:--------:|:----------:|:----------:|:----------:|:----------:|:----------:|:------------------:|
-| yolox_s_only_pallet |      9.0 M     |     LOCO    |  24.0%   |   53.2%    |   17.2%    |    7.9%    |   24.3%    |   40.6%    |       6.74 ms      |
+|      **Model**      | **Parameters** | **Dataset** | **$AP$** | **$AP_50$** | **$AP_75$** | **$AP_S$** | **$AP_M$** | **$AP_L$** | **Inference time** |
+|:-------------------:|:--------------:|:-----------:|:--------:|:-----------:|:-----------:|:----------:|:----------:|:----------:|:------------------:|
+| yolox_s_only_pallet |      9.0 M     |     LOCO    |  24.0%   |    53.2%    |    17.2%    |    7.9%    |   24.3%    |   40.6%    |       6.74 ms      |
+| yolox_s_pallet_void |      9.0 M     |     LOCO    |   0.2%   |  0.2%       |  0.2%       |    0.0%    |    0.7%    |    0.0%    |       6.96 ms      |
+
 <figcaption align = "center"><b> <a name="table_1">Table 1:</a> Training results for only pallet's from the LOCO dataset, trained on an NVIDIA GeForce RTX 3060 Laptop GPU.</b></figcaption>
 </center>
 
