@@ -29,6 +29,7 @@ estimation in C++. A total of two models has been created from the pallet datase
 YOLOX-S training results for only pallet and pallet void.
 
 <center>
+
 <figcaption align = "center"><b> <a name="table_1">Table 1:</a> Training results for only_pallet and pallet_void from the LOCO dataset, trained on an NVIDIA GeForce RTX 3060 Laptop GPU.</b></figcaption>
 
 |      **Model**      | **Parameters** | **Dataset** | **$AP$** | **$AP_{50}$** | **$AP_{75}$** | **$AP_S$** | **$AP_M$** | **$AP_L$** | **Inference time** |
@@ -124,6 +125,7 @@ The distance from the pallet is two-meter for both tests. [Figure 5](#figure_5) 
 ## Requirements
 
 <center>
+
 <figcaption align = "center"><b> <a name="table_2">Table 2:</a> Required library packages.</b></figcaption>
 
 | **Package**     | **Minimum version** | **Info**                                                                                |
