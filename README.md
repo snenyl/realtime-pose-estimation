@@ -26,19 +26,23 @@ is performed as the Intel RealSense l515 does not detect the ground of the palle
 
 ## Object Detection
 
-The object detection algorithm is the YOLOX-S model from the [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) repository, which is transfer learned on the 
-[LOCO](https://github.com/tum-fml/loco) dataset. The final version is optimized with [Intel OpenVINO](https://github.com/openvinotoolkit/openvino) and implemented together
-with the pose estimation in C++. [Table 1](#table_1) present the YOLOX-S training results for only pallet.
+The object detection algorithm is the YOLOX-S model from the [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) 
+repository, which is transfer learned on the [LOCO](https://github.com/tum-fml/loco) dataset. The final version is 
+optimized with [Intel OpenVINO](https://github.com/openvinotoolkit/openvino) and implemented togetherwith the pose 
+estimation in C++. A total of two models has been created from the pallet dataset and [Table 1](#table_1) present the 
+YOLOX-S training results for only pallet and pallet void.
 
 <center>
 
-| **Model** | **Parameters** | **Dataset** | **AP** | **AP50** | **AP75** | **AP_S** | **AP_M** | **AP_L** | **Inference time** |
-|:---------:|:--------------:|:-----------:|:------:|:--------:|:--------:|:--------:|:--------:|:--------:|:------------------:|
-|   YOLOX-S |      9.0 M     |     LOCO    |  24.0% |   53.2%  |   17.2%  |   7.9%   |   24.3%  |   40.6%  |       6.74 ms      |
+|      **Model**      | **Parameters** | **Dataset** | **$AP$** | **$AP50$** | **$AP75$** | **$AP_S$** | **$AP_M$** | **$AP_L$** | **Inference time** |
+|:-------------------:|:--------------:|:-----------:|:--------:|:----------:|:----------:|:----------:|:----------:|:----------:|:------------------:|
+| yolox_s_only_pallet |      9.0 M     |     LOCO    |  24.0%   |   53.2%    |   17.2%    |    7.9%    |   24.3%    |   40.6%    |       6.74 ms      |
 <figcaption align = "center"><b> <a name="table_1">Table 1:</a> Training results for only pallet's from the LOCO dataset, trained on an NVIDIA GeForce RTX 3060 Laptop GPU.</b></figcaption>
 </center>
 
 &nbsp;
+
+### Only pallet detection model
 
 The YOLOX algorithm has been tested on synthetic pallets in Unreal Engine as shown in [Figure 2](#figure_2).
 
@@ -50,6 +54,9 @@ The YOLOX algorithm has been tested on synthetic pallets in Unreal Engine as sho
 &nbsp;
 
 </div>
+
+### Only pallet void detection model
+
 
 ## Pose Estimation
 The pose estimation is performed using the object detection algorithm and point cloud data.
@@ -96,21 +103,24 @@ The distance from the pallet is two-meter for both tests. [Figure 4](#figure_4) 
 
 ## Requirements
 
-- realsense2
-- OpenCV (contrib)
-- InferenceEngine
-- ngraph
-- PCL
-
+| **Package**     | **Minimum version** | **Info**                                                                                |
+|-----------------|---------------------|-----------------------------------------------------------------------------------------|
+| realsense2      | 2.50.0              | From the [Intel® RealSense™ SDK 2.0](https://github.com/IntelRealSense/librealsense).   |
+| OpenCV          | 4.2.0               | [OpenCV_contib](https://github.com/opencv/opencv_contrib) is required for aruco module. |
+| InferenceEngine | 2021.4.752          | From the [OpenVINO toolkit](https://github.com/openvinotoolkit/openvino).               |
+| ngraph          | N/A                 | Required for InferenceEngine, and part of openVINO.                                     |
+| PCL             | 1.10.0              | From [PointCloudLibrary/pcl](https://github.com/PointCloudLibrary/pcl).                 |
 ## Future Work<a name="future_work"></a>
 
-- Improve the robustness of the system.
-- Increasing the range of the pose estimation by using only a single plane and not requiring the ground plane.
-- Switch between using the ground plane and not.
+- Improve the robustness of the system by implementing 
+- Increasing the range of the pose estimation by using only a single plane and not requiring the ground plane
+ (Dynamic depending on number of remaining points after extraction). 
 - Detecting pallet holes.
 - Make all the vector operations in a single matrix operation.
 - Add configuration.
+- Add [TensorRT](https://github.com/NVIDIA/TensorRT) based object detection class library for optimized inference on NVIDIA hardware.
 
 ## Known Issues<a name="known_issues"></a>
 
-- The image sometimes switch between RGB and BGR. Unknown if this is an issue in the code or in the imported rosbag.
+- The colors in the image sometimes switch between RGB and BGR. Unknown if this is an issue in the code or in 
+ the imported rosbag. The issue is shown in the [demo at 01:26](https://youtu.be/HvKInx1uoBw?t=86). 
