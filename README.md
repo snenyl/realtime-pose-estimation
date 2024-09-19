@@ -26,7 +26,7 @@ The object detection algorithm is the YOLOX-S model from the [YOLOX](https://git
 repository, which is transfer learned on the [LOCO](https://github.com/tum-fml/loco) dataset. The final version is 
 optimized with [Intel OpenVINO](https://github.com/openvinotoolkit/openvino) and implemented together with the pose 
 estimation in C++. A total of two models has been created from the pallet dataset and [Table 1](#table_1) present the 
-YOLOX-S training results for only pallet and pallet void.
+YOLOX-S training results for only pallet and pallet void. [The pytorch weights are available here.](https://mega.nz/folder/jhI11RII#-dDhiLgS3UI2LYpJDjstjw)
 
 <center>
 
