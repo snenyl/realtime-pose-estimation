@@ -1,7 +1,7 @@
 <div align="center"><h1>Real-time Pose Estimation</h1> </div>
 
 This is part of the master's thesis: "_A Machine Learning and Point Cloud Processing based Approach for Object Detection
-and Pose Estimation: Design, Implementation, and Validation_", available at [AURA UiA](https://uia.brage.unit.no/uia-xmlui/handle/11250/3033952).
+and Pose Estimation: Design, Implementation, and Validation_", available at [Norwegian Research Information Repository](https://nva.sikt.no/registration/01999eb461bc-791bb547-3fb3-498e-98e3-089748ad0827).
 
 By combining an RGB image and point cloud data is, the system capable of detecting the object's pose by using object detection,
 RANSAC and vector operations within the set requirements. This work is based on the [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX) algorithm and
